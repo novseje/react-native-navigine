@@ -1,5 +1,5 @@
-import { NativeModules } from 'react-native';
+import { requireNativeComponent } from 'react-native';
 
-const { Navigine } = NativeModules;
+const Navigine = requireNativeComponent('Navigine', null);
 
 export default Navigine;

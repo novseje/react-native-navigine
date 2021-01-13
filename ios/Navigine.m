@@ -4,10 +4,16 @@
 
 RCT_EXPORT_MODULE()
 
-RCT_EXPORT_METHOD(sampleMethod:(NSString *)stringArgument numberParameter:(nonnull NSNumber *)numberArgument callback:(RCTResponseSenderBlock)callback)
+- (UIView *)view
 {
     // TODO: Implement some actually useful functionality
-    callback(@[[NSString stringWithFormat: @"numberArgument: %@ stringArgument: %@", numberArgument, stringArgument]]);
+    UILabel * label = [[UILabel alloc] init];
+    [label setTextColor:[UIColor redColor]];
+    [label setText: @"*****"];
+    [label sizeToFit];
+    UIView * wrapper = [[UIView alloc] init];
+    [wrapper addSubview:label];
+    return wrapper;
 }
 
 @end
