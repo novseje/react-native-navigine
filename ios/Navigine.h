@@ -5,7 +5,14 @@
 
 @class ErrorView, RouteEventView, CurrentLocation, MapPin;
 
-@interface Navigine : NSObject <RCTBridgeModule>
+@interface Navigine : NSObject
+<
+RCTBridgeModule,
+NavigineCoreDelegate,
+NavigineCoreNavigationDelegate,
+NavigineCoreLocationDelegate,
+NavigineCoreBluetoothDelegate
+>
 @property (weak, nonatomic) IBOutlet UIImageView *imageView;
 @property (weak, nonatomic) IBOutlet UIScrollView *scrollView;
 // Buttons

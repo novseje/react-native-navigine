@@ -14,28 +14,31 @@ RCT_EXPORT_METHOD(init:(RCTResponseSenderBlock)callback)
 {
     [self initCore];
 
+        _curPosition = [[CurrentLocation alloc] init];
+        _curPosition.hidden = NO;
+
         BOOL forced = YES;
         // If YES, the content data would be loaded even if the same version has been downloaded already earlier.
         // If NO, the download process compares the current downloaded version with the last version on the server.
         // If server version equals to the current downloaded version, the re-downloading is not done.
-    NSLog( @"Before navigineCore" );
-        [_navigineCore downloadLocationById:_locationId
-                               forceReload:forced
-                              processBlock:^(NSInteger loadProcess) {
-    NSLog( @"processBlock" );
-                                  NSLog(@"%zd",loadProcess);
-                              } successBlock:^(NSDictionary *userInfo) {
-    NSLog( @"successBlock" );
-                                 // [_navigineCore startNavigine];
-    NSLog( @"%@", _navigineCore.location.name );
+        NSLog( @"Before navigineCore" );
+        [_navigineCore downloadLocationById:_locationId forceReload:forced
+            processBlock:^(NSInteger loadProcess) {
+                NSLog( @"processBlock" );
+                NSLog(@"%zd",loadProcess);
+            } successBlock:^(NSDictionary *userInfo) {
+                NSLog( @"successBlock" );
+                NSLog( @"%@", _navigineCore.location.name );
 
-                           [self.navigineCore startNavigine];
+                [_navigineCore startNavigine];
 
-                                  callback(@[[NSString stringWithFormat: @"numberArgument: %ld stringArgument: %@", (long)_navigineCore.location.id, _navigineCore.location.name]]);
-                              } failBlock:^(NSError *error) {
-    NSLog( @"failBlock" );
-                                  NSLog(@"%@",error);
-                              }];
+                //NSLog( @"curPosition: %@", _curPosition );
+
+                callback(@[[NSString stringWithFormat: @"numberArgument: %ld stringArgument: %@", (long)_navigineCore.location.id, _navigineCore.location.name]]);
+            } failBlock:^(NSError *error) {
+                NSLog( @"failBlock" );
+                NSLog(@"%@",error);
+            }];
 
 NSLog( @"end of initNav" );
 
@@ -66,12 +69,21 @@ RCT_EXPORT_METHOD(sampleMethod:(NSString *)stringArgument numberParameter:(nonnu
     callback(@[[NSString stringWithFormat: @"numberArgument: %@ stringArgument: %@", numberArgument, stringArgument]]);
 }
 
+- (dispatch_queue_t)methodQueue
+{
+    return dispatch_get_main_queue();
+}
+
 - (void) initCore {
     _floor = 0;
     _locationId = 60019; // location id from web site
     NSString *userHash = @"D536-A0D5-4BEE-25CE"; // your personal security key in the profile
     NSString *server = @"https://api.navigine.com"; // your API server
     _navigineCore = [[NavigineCore alloc] initWithUserHash:userHash server:server];
+    _navigineCore.delegate = self;
+    _navigineCore.locationDelegate = self;
+    _navigineCore.navigationDelegate = self;
+    _navigineCore.bluetoothDelegate = self;
 }
 
 - (void) setupFloor:(NSInteger) floor {
@@ -292,9 +304,16 @@ RCT_EXPORT_METHOD(sampleMethod:(NSString *)stringArgument numberParameter:(nonnu
   return hexStr;
 }
 
+- (NSString *)encodeToBase64String:(UIImage *)image {
+ return [UIImagePNGRepresentation(image) base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+}
+
 # pragma mark NavigineCoreDelegate methods
 
 - (void) navigineCore: (NavigineCore *)navigineCore didUpdateDeviceInfo: (NCDeviceInfo *)deviceInfo {
+NSLog( @"!!!!!!!!!!  didUpdateDeviceInfo  !!!!!!!!!!!!!" );
+NSLog(@"navError: %@", deviceInfo.error);
+//NSLog( @"%@", deviceInfo.x);
   NSError *navError = deviceInfo.error;
   if (navError == nil) {
     _errorView.hidden = YES;
@@ -395,10 +414,6 @@ RCT_EXPORT_METHOD(sampleMethod:(NSString *)stringArgument numberParameter:(nonnu
 
 - (void)navigineCore:(NavigineCore *)navigineCore didUpdateBluetoothState:(CBManagerState)status {
   NSLog(@"Bluetooth status: %zd", status);
-}
-
-- (NSString *)encodeToBase64String:(UIImage *)image {
- return [UIImagePNGRepresentation(image) base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
 }
 
 @end
