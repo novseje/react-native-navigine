@@ -28,9 +28,10 @@ RCT_EXPORT_METHOD(init:(RCTResponseSenderBlock)callback)
                 NSLog(@"%zd",loadProcess);
             } successBlock:^(NSDictionary *userInfo) {
                 NSLog( @"successBlock" );
-                NSLog( @"%@", _navigineCore.location.name );
+                NSLog( @"%@", self->_navigineCore.location.name );
 
-                [_navigineCore startNavigine];
+                [self->_navigineCore startNavigine];
+                [self setupFloor: self.floor];
 
                 //NSLog( @"curPosition: %@", _curPosition );
 
@@ -77,6 +78,7 @@ RCT_EXPORT_METHOD(sampleMethod:(NSString *)stringArgument numberParameter:(nonnu
 - (void) initCore {
     _floor = 0;
     _locationId = 60019; // location id from web site
+    _zoomScale = 1;
     NSString *userHash = @"D536-A0D5-4BEE-25CE"; // your personal security key in the profile
     NSString *server = @"https://api.navigine.com"; // your API server
     _navigineCore = [[NavigineCore alloc] initWithUserHash:userHash server:server];
@@ -87,29 +89,36 @@ RCT_EXPORT_METHOD(sampleMethod:(NSString *)stringArgument numberParameter:(nonnu
 }
 
 - (void) setupFloor:(NSInteger) floor {
-  [self removeVenuesFromMap]; // Remove venues from map
-  [self removeZonesFromMap];  // Remove zones from map
+//  [self removeVenuesFromMap]; // Remove venues from map
+//  [self removeZonesFromMap];  // Remove zones from map
   _location = _navigineCore.location;
-  _sublocation = _navigineCore.location.sublocations[floor];
-  _imageView.image = [UIImage imageWithData: _sublocation.sublocationImage.imageData];
+  _sublocation = _navigineCore.location.sublocations[_floor];
+  UIImage *floorImg = [UIImage imageWithData: _sublocation.sublocationImage.imageData];
   [_scrollView addSubview:_imageView];
-  _btnStackFloor.hidden = _location.sublocations.count == 1; // Hide buttons if count of sublocations = 0
-  _lblCurrentFloor.text = [NSString stringWithFormat:@"%d", _floor];
-  const CGSize imgSize = _imageView.image.size;
+
+NSLog( @"setupFloor" );
+
+  const CGSize imgSize = floorImg.size;
+
+NSLog( @"imgSize_width: %f, imgSize_height: %f", imgSize.width, imgSize.height );
+
+   _floorImageWidth = imgSize.width;
+   _floorImageHeight = imgSize.height;
+
   const CGSize viewSize = CGSizeMake(400, 400);
   float scale = 1.f;
   if ((imgSize.width / imgSize.height) > (viewSize.width / viewSize.height))
     scale = viewSize.height / imgSize.height;
   else
     scale = imgSize.width / imgSize.width;
-  _scrollView.contentSize = CGSizeMake(imgSize.width * scale, imgSize.height * scale);
-  // Add constraints
-  _imageViewWidthConstraint.constant = imgSize.width * scale;
-  _imageViewHeightConstraint.constant = imgSize.height * scale;
-  _imageViewTopConstraint.constant = 0;
-  _imageViewLeadingConstraint.constant = 0;
-  [self drawZones];
-  [self drawVenues];
+
+   _floorViewWidth = imgSize.width * scale;
+   _floorViewHeight = imgSize.height * scale;
+   _zoomScale = scale;
+//  _scrollView.contentSize = CGSizeMake(imgSize.width * scale, imgSize.height * scale);
+
+//  [self drawZones];
+//  [self drawVenues];
 }
 
 #pragma mark Handlers
@@ -189,8 +198,9 @@ RCT_EXPORT_METHOD(sampleMethod:(NSString *)stringArgument numberParameter:(nonnu
 
 // Convert from meters to pixels
 - (CGPoint) convertMetersToPixels:(float)srcX :(float)srcY withScale :(float)scale {
-  const CGFloat dstX = (_imageView.width / scale) * srcX / _sublocation.dimensions.width;
-  const CGFloat dstY = (_imageView.height / scale) * (1. - srcY / _sublocation.dimensions.height);
+NSLog( @"_imageView.width: %f", _floorImageWidth);
+  const CGFloat dstX = (_floorImageWidth / scale) * srcX / _sublocation.dimensions.width;
+  const CGFloat dstY = (_floorImageHeight / scale) * (1. - srcY / _sublocation.dimensions.height);
   return CGPointMake(dstX, dstY);
 }
 
@@ -313,15 +323,18 @@ RCT_EXPORT_METHOD(sampleMethod:(NSString *)stringArgument numberParameter:(nonnu
 - (void) navigineCore: (NavigineCore *)navigineCore didUpdateDeviceInfo: (NCDeviceInfo *)deviceInfo {
 NSLog( @"!!!!!!!!!!  didUpdateDeviceInfo  !!!!!!!!!!!!!" );
 NSLog(@"navError: %@", deviceInfo.error);
-//NSLog( @"%@", deviceInfo.x);
+NSLog( @"deviceInfo.x: %@", deviceInfo.x);
+NSLog( @"deviceInfo.y: %@", deviceInfo.y);
+
   NSError *navError = deviceInfo.error;
   if (navError == nil) {
     _errorView.hidden = YES;
     _curPosition.hidden = deviceInfo.sublocation != _sublocation.id; // Hide current position pin
     if(!_curPosition.hidden) {
       const float radScale = _imageView.width / _sublocation.dimensions.width;
-      _curPosition.center = [self convertMetersToPixels: [deviceInfo.x floatValue]: [deviceInfo.y floatValue] withScale: _scrollView.zoomScale];
+      _curPosition.center = [self convertMetersToPixels: [deviceInfo.x floatValue]: [deviceInfo.y floatValue] withScale: _zoomScale];
       _curPosition.radius = deviceInfo.r * radScale;
+NSLog( @"curPosition: %f", _curPosition.center.x);
     }
   }
   else {

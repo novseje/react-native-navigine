@@ -15,18 +15,20 @@ NavigineCoreBluetoothDelegate
 >
 @property (weak, nonatomic) IBOutlet UIImageView *imageView;
 @property (weak, nonatomic) IBOutlet UIScrollView *scrollView;
-// Buttons
+
 @property (weak, nonatomic) IBOutlet UILabel *lblCurrentFloor;
 @property (weak, nonatomic) IBOutlet UIStackView *btnStackFloor;
 @property (nonatomic, strong) MapPin *pressedPin; // Selected venue
 @property (nonatomic, strong) CurrentLocation *curPosition;
+
 @property (nonatomic, assign) int floor; // Selected sublocation
 @property (nonatomic, assign) int locationId;
-// Constraints
-@property (weak, nonatomic) IBOutlet NSLayoutConstraint *imageViewHeightConstraint;
-@property (weak, nonatomic) IBOutlet NSLayoutConstraint *imageViewWidthConstraint;
-@property (weak, nonatomic) IBOutlet NSLayoutConstraint *imageViewTopConstraint;
-@property (weak, nonatomic) IBOutlet NSLayoutConstraint *imageViewLeadingConstraint;
+@property (nonatomic, assign) float zoomScale;
+@property (nonatomic, assign) float floorImageHeight;
+@property (nonatomic, assign) float floorImageWidth;
+@property (nonatomic, assign) float floorViewHeight;
+@property (nonatomic, assign) float floorViewWidth;
+
 // Path
 @property (nonatomic, strong) UIBezierPath *routePath;
 @property (nonatomic, strong) CAShapeLayer *routeLayer;
