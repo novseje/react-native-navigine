@@ -4,14 +4,13 @@
 
 `$ npm install react-native-navigine --save`
 
-### Mostly automatic installation
-
-`$ react-native link react-native-navigine`
+Attach NavigineFramework in XCode.
 
 ## Usage
 ```javascript
-import Navigine from 'react-native-navigine';
+import NaviginePlugin from 'react-native-navigine';
 
-// TODO: What to do with the module?
-Navigine;
+NaviginePlugin.init(async (param) => {
+    // Start work with Navigine
+});
 ```
