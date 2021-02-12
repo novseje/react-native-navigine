@@ -64,6 +64,33 @@ RCT_EXPORT_METHOD(getFloorImage: (RCTResponseSenderBlock)callback)
     callback(@[[NSString stringWithFormat: @"%@", [self encodeToBase64String:floorImg]]]);
 }
 
+RCT_EXPORT_METHOD(getCurPosition: (RCTResponseSenderBlock)callback)
+{
+    NSLog( @"getCurPosition" );
+
+    NSLog( @"curPosition: %f, %f, zoom: %f", _curPosition.center.x, _curPosition.center.y, _zoomScale);
+
+    callback(@[[NSString stringWithFormat: @"%f|%f", _curPosition.center.x * _zoomScale, _curPosition.center.y * _zoomScale]]);
+}
+
+RCT_EXPORT_METHOD(getFloorImageSizes: (RCTResponseSenderBlock)callback)
+{
+    NSLog( @"getFloorImageSizes" );
+
+    NSLog( @"floorImageSizes: %f|%f", _floorImageWidth, _floorImageHeight);
+
+    callback(@[[NSString stringWithFormat: @"%f|%f", _floorImageWidth, _floorImageHeight]]);
+}
+
+RCT_EXPORT_METHOD(getZoomScale: (RCTResponseSenderBlock)callback)
+{
+    NSLog( @"getZoomScale" );
+
+    NSLog( @"zoomScale: %f", _zoomScale);
+
+    callback(@[[NSString stringWithFormat: @"%f", _zoomScale]]);
+}
+
 RCT_EXPORT_METHOD(sampleMethod:(NSString *)stringArgument numberParameter:(nonnull NSNumber *)numberArgument callback:(RCTResponseSenderBlock)callback)
 {
     // TODO: Implement some actually useful functionality
@@ -199,6 +226,8 @@ NSLog( @"imgSize_width: %f, imgSize_height: %f", imgSize.width, imgSize.height )
 // Convert from meters to pixels
 - (CGPoint) convertMetersToPixels:(float)srcX :(float)srcY withScale :(float)scale {
 NSLog( @"_imageView.width: %f", _floorImageWidth);
+NSLog( @"_imageView.height: %f", _floorImageHeight);
+NSLog( @"_zoomScale: %f", _zoomScale);
   const CGFloat dstX = (_floorImageWidth / scale) * srcX / _sublocation.dimensions.width;
   const CGFloat dstY = (_floorImageHeight / scale) * (1. - srcY / _sublocation.dimensions.height);
   return CGPointMake(dstX, dstY);
@@ -334,7 +363,7 @@ NSLog( @"deviceInfo.y: %@", deviceInfo.y);
       const float radScale = _imageView.width / _sublocation.dimensions.width;
       _curPosition.center = [self convertMetersToPixels: [deviceInfo.x floatValue]: [deviceInfo.y floatValue] withScale: _zoomScale];
       _curPosition.radius = deviceInfo.r * radScale;
-NSLog( @"curPosition: %f", _curPosition.center.x);
+NSLog( @"curPosition: %f, %f", _curPosition.center.x, _curPosition.center.y);
     }
   }
   else {

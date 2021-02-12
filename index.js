@@ -40,6 +40,38 @@ const NaviginePlugin = {
         return response;
     },
 
+    getCurPosition: async function () {
+        let getCurPositionPromise = new Promise((resolve, reject) => {
+            Navigine.getCurPosition(function (data) {
+                resolve(data);
+            });
+        });
+        let response = await getCurPositionPromise;
+        let coords = response.split('|');
+        return {x: parseFloat(coords[0]), y: parseFloat(coords[1]) };
+    },
+
+    getFloorImageSizes: async function () {
+        let getFloorImageSizesPromise = new Promise((resolve, reject) => {
+            Navigine.getFloorImageSizes(function (data) {
+                resolve(data);
+            });
+        });
+        let response = await getFloorImageSizesPromise;
+        let coords = response.split('|');
+        return {x: parseFloat(coords[0]), y: parseFloat(coords[1]) };
+    },
+
+    getZoomScale: async function () {
+        let getZoomScalePromise = new Promise((resolve, reject) => {
+            Navigine.getZoomScale(function (data) {
+                resolve(data);
+            });
+        });
+        let response = await getZoomScalePromise;
+        return parseFloat(response);
+    },
+
     getFloorImage222: async function () {
         Navigine.getFloorImage(callbackFn);
     },
