@@ -4,7 +4,9 @@
 
 `$ npm install react-native-navigine --save`
 
-Attach NavigineFramework in XCode.
+Join NavigineFramework to node module in XCode.
+
+![alt text](/extra/add-framework.png?raw=true "Xcode")
 
 ## Usage
 ```javascript
