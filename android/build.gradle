@@ -73,6 +73,8 @@ repositories {
 dependencies {
     //noinspection GradleDynamicVersion
     implementation 'com.facebook.react:react-native:+'  // From node_modules
+
+    implementation 'com.github.Navigine:Android-SDK:20201210'
 }
 
 def configureReactNativePom(def pom) {

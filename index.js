@@ -75,6 +75,10 @@ const NaviginePlugin = {
     getFloorImage222: async function () {
         Navigine.getFloorImage(callbackFn);
     },
+
+    test: async function () {
+        Navigine.test(callbackFn);
+    },
 }
 
 export default NaviginePlugin;
