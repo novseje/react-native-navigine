@@ -4,6 +4,8 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.NativeModule;
+import com.facebook.react.bridge.ReactContext;
 
 import android.app.*;
 import android.content.*;
@@ -46,7 +48,6 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       private View          mAdjustModeView           = null;
       private TextView      mCurrentFloorLabel        = null;
       private TextView      mErrorMessageLabel        = null;
-      private Handler       mHandler                  = new Handler();
       private float         mDisplayDensity           = 0.0f;
 
       private boolean       mAdjustMode               = false;
@@ -91,7 +92,8 @@ public class NavigineModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void test(Callback callback) {
-              if (NavigineSDK.initialize(reactContext, "D536-A0D5-4BEE-25CE", "https://api.navigine.com"))
+
+              if (NavigineSDK.initialize(this.reactContext, "D536-A0D5-4BEE-25CE", "https://api.navigine.com"))
               {
                 NavigineSDK.loadLocationInBackground("план-офиса2", 30,
                   new Location.LoadListener()
