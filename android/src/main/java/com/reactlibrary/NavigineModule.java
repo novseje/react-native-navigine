@@ -92,24 +92,26 @@ public class NavigineModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void test(Callback callback) {
-
+      Log.d(TAG, "NavigineSDK.initialize | START");
               if (NavigineSDK.initialize(this.reactContext, "D536-A0D5-4BEE-25CE", "https://api.navigine.com"))
               {
-                NavigineSDK.loadLocationInBackground("план-офиса2", 30,
+                Log.d(TAG, "NavigineSDK.initialize | OK");
+                NavigineSDK.loadLocationInBackground(60019, 30,
                   new Location.LoadListener()
                   {
                     @Override public void onFinished()
                     {
-                      Log.d("NAVIGINE", "onFinished");
+                      Log.d(TAG, "onFinished");
+                      mNavigation = NavigineSDK.getNavigation();
                     }
                     @Override public void onFailed(int error)
                     {
-                      Log.d("NAVIGINE", "Error downloading location 'Navigine Demo' (error " + error + ")! " +
+                      Log.d(TAG, "Error downloading location 'Navigine Demo' (error " + error + ")! " +
                                            "Please, try again later or contact technical support");
                     }
                     @Override public void onUpdate(int progress)
                     {
-                      Log.d("NAVIGINE", "Downloading location: " + progress + "%");
+                      Log.d(TAG, "Downloading location: " + progress + "%");
                     }
                   });
               }
@@ -117,6 +119,42 @@ public class NavigineModule extends ReactContextBaseJavaModule {
 
         // TODO: Implement some actually useful functionality
         callback.invoke("Received Argument");
+    }
+
+    @ReactMethod
+    public void init(Callback callback) {
+      Log.d(TAG, "init()");
+      callback.invoke("init()");
+    }
+
+    @ReactMethod
+    public void getLocationData(Callback callback) {
+      Log.d(TAG, "getLocationData()");
+      callback.invoke("getLocationData()");
+    }
+
+    @ReactMethod
+    public void getFloorImage(Callback callback) {
+      Log.d(TAG, "getFloorImage()");
+      callback.invoke("");
+    }
+
+    @ReactMethod
+    public void getCurPosition(Callback callback) {
+      Log.d(TAG, "getCurPosition()");
+      callback.invoke("0|0");
+    }
+
+    @ReactMethod
+    public void getFloorImageSizes(Callback callback) {
+      Log.d(TAG, "getFloorImageSizes()");
+      callback.invoke("0|0");
+    }
+
+    @ReactMethod
+    public void getZoomScale(Callback callback) {
+      Log.d(TAG, "getZoomScale()");
+      callback.invoke("1");
     }
 
       protected void RENAMEDonCreate(Bundle savedInstanceState)
@@ -129,6 +167,8 @@ public class NavigineModule extends ReactContextBaseJavaModule {
          */
 
         mNavigation = NavigineSDK.getNavigation();
+
+        loadMap();
 
         // Setting up device listener
         if (mNavigation != null)
