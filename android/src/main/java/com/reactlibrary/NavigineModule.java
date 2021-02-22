@@ -18,6 +18,8 @@ import android.widget.*;
 import android.util.*;
 import java.io.*;
 import java.lang.*;
+import java.util.Locale;
+import android.icu.util.Calendar;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -158,25 +160,33 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       if (NavigineSDK.initialize(mContext, "D536-A0D5-4BEE-25CE", "https://api.navigine.com"))
       {
         Log.d(TAG, "NavigineSDK.initialize | OK");
-        boolean isLoaded = NavigineSDK.loadLocationInBackground(60019, 30,
-                new Location.LoadListener()
-                {
-                  @Override public void onFinished()
-                  {
-                    Log.d(TAG, "onFinished");
-                    mNavigation = NavigineSDK.getNavigation();
-                  }
-                  @Override public void onFailed(int error)
-                  {
-                    Log.d(TAG, "Error downloading location 'Navigine Demo' (error " + error + ")! " +
-                            "Please, try again later or contact technical support");
-                  }
-                  @Override public void onUpdate(int progress)
-                  {
-                    Log.d(TAG, "Downloading location: " + progress + "%");
-                  }
-                });
-        Log.d(TAG, "NavigineSDK.loadLocationInBackground() isLoaded? = " + isLoaded);
+
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+               @Override
+               public void run() {
+                 boolean isLoaded = NavigineSDK.loadLocationInBackground(60019, 30,
+                         new Location.LoadListener()
+                         {
+                           @Override public void onFinished()
+                           {
+                             Log.d(TAG, "onFinished");
+                             mNavigation = NavigineSDK.getNavigation();
+                           }
+                           @Override public void onFailed(int error)
+                           {
+                             Log.d(TAG, "Error downloading location 'Navigine Demo' (error " + error + ")! " +
+                                     "Please, try again later or contact technical support");
+                           }
+                           @Override public void onUpdate(int progress)
+                           {
+                             Log.d(TAG, "Downloading location: " + progress + "%");
+                           }
+                         });
+                 Log.d(TAG, "NavigineSDK.loadLocationInBackground() isLoaded? = " + isLoaded);
+               }
+        });
+
+
       }
 
       Log.d(TAG, "init()");
@@ -521,6 +531,7 @@ public class NavigineModule extends ReactContextBaseJavaModule {
 
         mNavigation.setMode(NavigationThread.MODE_NORMAL);
 
+        mNavigation.setLogFile(getLogFile("log"));
 
         mLocationView.redraw();
         return true;
