@@ -7,6 +7,7 @@ import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactContext;
 
+import android.Manifest;
 import android.app.*;
 import android.content.*;
 import android.graphics.*;
@@ -17,13 +18,18 @@ import android.widget.*;
 import android.util.*;
 import java.io.*;
 import java.lang.*;
-import java.util.*;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import android.Manifest;
+import android.content.pm.PackageManager;
 
 import com.navigine.naviginesdk.*;
 
-public class NavigineModule extends ReactContextBaseJavaModule {
 
-    private final ReactApplicationContext reactContext;
+
+public class NavigineModule extends ReactContextBaseJavaModule {
+  private final ReactApplicationContext mContext;
 
       private static final String   TAG                     = "NAVIGINE.Demo";
       private static final String   NOTIFICATION_CHANNEL    = "NAVIGINE_DEMO_NOTIFICATION_CHANNEL";
@@ -76,7 +82,7 @@ public class NavigineModule extends ReactContextBaseJavaModule {
 
     public NavigineModule(ReactApplicationContext reactContext) {
         super(reactContext);
-        this.reactContext = reactContext;
+        this.mContext = reactContext;
     }
 
     @Override
@@ -93,10 +99,10 @@ public class NavigineModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void test(Callback callback) {
       Log.d(TAG, "NavigineSDK.initialize | START");
-              if (NavigineSDK.initialize(this.reactContext, "D536-A0D5-4BEE-25CE", "https://api.navigine.com"))
+              if (NavigineSDK.initialize(mContext, "D536-A0D5-4BEE-25CE", "https://api.navigine.com"))
               {
                 Log.d(TAG, "NavigineSDK.initialize | OK");
-                NavigineSDK.loadLocationInBackground(60019, 30,
+                boolean isLoaded = NavigineSDK.loadLocationInBackground(60019, 30,
                   new Location.LoadListener()
                   {
                     @Override public void onFinished()
@@ -114,6 +120,7 @@ public class NavigineModule extends ReactContextBaseJavaModule {
                       Log.d(TAG, "Downloading location: " + progress + "%");
                     }
                   });
+                Log.d(TAG, "NavigineSDK.loadLocationInBackground() isLoaded? = " + isLoaded);
               }
 
 
@@ -123,6 +130,55 @@ public class NavigineModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void init(Callback callback) {
+      // Setting up NavigineSDK parameters
+      NavigineSDK.setParameter(mContext, "debug_level", 2);
+      NavigineSDK.setParameter(mContext, "actions_updates_enabled",  false);
+      NavigineSDK.setParameter(mContext, "location_updates_enabled", true);
+      NavigineSDK.setParameter(mContext, "location_loader_timeout",  60);
+      NavigineSDK.setParameter(mContext, "location_update_timeout",  300);
+      NavigineSDK.setParameter(mContext, "location_retry_timeout",   300);
+      NavigineSDK.setParameter(mContext, "post_beacons_enabled",     true);
+      NavigineSDK.setParameter(mContext, "post_messages_enabled",    true);
+
+      /*
+      if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        requestPermissions( //Method of Fragment
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                101
+        );
+      } else {
+        Log.d(TAG, "Permissions already granted");
+      }
+      */
+
+      Log.d(TAG, "NavigineSDK.initialize | START");
+      if (NavigineSDK.initialize(mContext, "D536-A0D5-4BEE-25CE", "https://api.navigine.com"))
+      {
+        Log.d(TAG, "NavigineSDK.initialize | OK");
+        boolean isLoaded = NavigineSDK.loadLocationInBackground(60019, 30,
+                new Location.LoadListener()
+                {
+                  @Override public void onFinished()
+                  {
+                    Log.d(TAG, "onFinished");
+                    mNavigation = NavigineSDK.getNavigation();
+                  }
+                  @Override public void onFailed(int error)
+                  {
+                    Log.d(TAG, "Error downloading location 'Navigine Demo' (error " + error + ")! " +
+                            "Please, try again later or contact technical support");
+                  }
+                  @Override public void onUpdate(int progress)
+                  {
+                    Log.d(TAG, "Downloading location: " + progress + "%");
+                  }
+                });
+        Log.d(TAG, "NavigineSDK.loadLocationInBackground() isLoaded? = " + isLoaded);
+      }
+
       Log.d(TAG, "init()");
       callback.invoke("init()");
     }
