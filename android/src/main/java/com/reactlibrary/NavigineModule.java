@@ -20,6 +20,7 @@ import java.io.*;
 import java.lang.*;
 import java.util.Locale;
 import android.icu.util.Calendar;
+import android.app.Activity;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -132,6 +133,8 @@ public class NavigineModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void init(Callback callback) {
+      final Activity activity = getCurrentActivity();
+
       // Setting up NavigineSDK parameters
       NavigineSDK.setParameter(mContext, "debug_level", 2);
       NavigineSDK.setParameter(mContext, "actions_updates_enabled",  false);
@@ -141,6 +144,12 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       NavigineSDK.setParameter(mContext, "location_retry_timeout",   300);
       NavigineSDK.setParameter(mContext, "post_beacons_enabled",     true);
       NavigineSDK.setParameter(mContext, "post_messages_enabled",    true);
+
+      ActivityCompat.requestPermissions(activity, new String[] { Manifest.permission.ACCESS_FINE_LOCATION,
+              Manifest.permission.ACCESS_COARSE_LOCATION,
+              Manifest.permission.READ_EXTERNAL_STORAGE,
+              Manifest.permission.WRITE_EXTERNAL_STORAGE}, 101);
+
 
       /*
       if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
