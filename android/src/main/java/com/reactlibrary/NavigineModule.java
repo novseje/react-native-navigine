@@ -82,6 +82,8 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       private RectF   mSelectedVenueRect = null;
       private Zone    mSelectedZone   = null;
 
+      private Callback       initCallback   = null;
+
 
     public NavigineModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -145,6 +147,11 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       NavigineSDK.setParameter(mContext, "post_beacons_enabled",     true);
       NavigineSDK.setParameter(mContext, "post_messages_enabled",    true);
 
+      // Initializing location view
+    //  LocationView mLocationView = new LocationView(mContext);
+
+      mCurrentSubLocationIndex = 0;
+
       ActivityCompat.requestPermissions(activity, new String[] { Manifest.permission.ACCESS_FINE_LOCATION,
               Manifest.permission.ACCESS_COARSE_LOCATION,
               Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -165,6 +172,8 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       }
       */
 
+      initCallback = callback;
+
       Log.d(TAG, "NavigineSDK.initialize | START");
       if (NavigineSDK.initialize(mContext, "D536-A0D5-4BEE-25CE", "https://api.navigine.com"))
       {
@@ -179,7 +188,27 @@ public class NavigineModule extends ReactContextBaseJavaModule {
                            @Override public void onFinished()
                            {
                              Log.d(TAG, "onFinished");
+
                              mNavigation = NavigineSDK.getNavigation();
+                             Log.d(TAG, "mNavigation = " + mNavigation.toString());
+
+                             // Setting up device listener
+                             if (mNavigation != null)
+                             {
+                               mNavigation.setDeviceListener
+                               (
+                                       new DeviceInfo.Listener()
+                                       {
+                                         @Override public void onUpdate(DeviceInfo info) { handleDeviceUpdate(info); }
+                                       }
+                               );
+                             }
+
+                             loadMap();
+
+                             Log.d(TAG, "init() callback");
+                             initCallback.invoke("init()");
+
                            }
                            @Override public void onFailed(int error)
                            {
@@ -198,8 +227,7 @@ public class NavigineModule extends ReactContextBaseJavaModule {
 
       }
 
-      Log.d(TAG, "init()");
-      callback.invoke("init()");
+      Log.d(TAG, "init() END");
     }
 
     @ReactMethod
@@ -223,7 +251,11 @@ public class NavigineModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void getFloorImageSizes(Callback callback) {
       Log.d(TAG, "getFloorImageSizes()");
-      callback.invoke("0|0");
+
+      SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
+      Log.d(TAG, String.format(Locale.ENGLISH, "Loading sublocation %s (%.2f x %.2f)", subLoc.getName(), subLoc.getWidth(), subLoc.getHeight()));
+
+      callback.invoke(subLoc.getWidth() + "|" + subLoc.getHeight());
     }
 
     @ReactMethod
@@ -434,6 +466,8 @@ public class NavigineModule extends ReactContextBaseJavaModule {
 
       private void handleDeviceUpdate(DeviceInfo deviceInfo)
       {
+        Log.d(TAG, "handleDeviceUpdate()");
+
         mDeviceInfo = deviceInfo;
         if (mDeviceInfo == null)
           return;
@@ -453,28 +487,25 @@ public class NavigineModule extends ReactContextBaseJavaModule {
 
         if (mDeviceInfo.isValid())
         {
-          cancelErrorMessage();
-          mBackView.setVisibility(mTargetPoint != null || mTargetVenue != null ?
-                                  View.VISIBLE : View.GONE);
           if (mAdjustMode)
             adjustDevice();
         }
         else
         {
-          mBackView.setVisibility(View.GONE);
+
           switch (mDeviceInfo.getErrorCode())
           {
             case 4:
-              setErrorMessage("You are out of navigation zone! Please, check that your bluetooth is enabled!");
+              Log.d(TAG, "You are out of navigation zone! Please, check that your bluetooth is enabled!");
               break;
 
             case 8:
             case 30:
-              setErrorMessage("Not enough beacons on the location! Please, add more beacons!");
+              Log.d(TAG, "Not enough beacons on the location! Please, add more beacons!");
               break;
 
             default:
-              setErrorMessage(String.format(Locale.ENGLISH,
+              Log.d(TAG, String.format(Locale.ENGLISH,
                               "Something is wrong with location '%s' (error code %d)! " +
                               "Please, contact technical support!",
                               mLocation.getName(), mDeviceInfo.getErrorCode()));
@@ -483,7 +514,7 @@ public class NavigineModule extends ReactContextBaseJavaModule {
         }
 
         // This causes map redrawing
-        mLocationView.redraw();
+       // mLocationView.redraw();
       }
 
       private void setErrorMessage(String message)
@@ -528,21 +559,11 @@ public class NavigineModule extends ReactContextBaseJavaModule {
           return false;
         }
 
-        if (mLocation.getSubLocations().size() >= 2)
-        {
-          mPrevFloorView.setVisibility(View.VISIBLE);
-          mNextFloorView.setVisibility(View.VISIBLE);
-          mCurrentFloorLabel.setVisibility(View.VISIBLE);
-        }
-        mZoomInView.setVisibility(View.VISIBLE);
-        mZoomOutView.setVisibility(View.VISIBLE);
-        mAdjustModeView.setVisibility(View.VISIBLE);
-
         mNavigation.setMode(NavigationThread.MODE_NORMAL);
 
         mNavigation.setLogFile(getLogFile("log"));
 
-        mLocationView.redraw();
+      //  mLocationView.redraw();
         return true;
       }
 
@@ -562,7 +583,7 @@ public class NavigineModule extends ReactContextBaseJavaModule {
           Log.e(TAG, String.format(Locale.ENGLISH, "Loading sublocation failed: invalid size: %.2f x %.2f", subLoc.getWidth(), subLoc.getHeight()));
           return false;
         }
-
+/*
         if (!mLocationView.loadSubLocation(subLoc))
         {
           Log.e(TAG, "Loading sublocation failed: invalid image");
@@ -576,35 +597,12 @@ public class NavigineModule extends ReactContextBaseJavaModule {
         mLocationView.setZoomRange(minZoomFactor, maxZoomFactor);
         mLocationView.setZoomFactor(minZoomFactor);
         Log.d(TAG, String.format(Locale.ENGLISH, "View size: %.1f x %.1f", viewWidth, viewHeight));
-
+*/
         mAdjustTime = 0;
         mCurrentSubLocationIndex = index;
-        mCurrentFloorLabel.setText(String.format(Locale.ENGLISH, "%d", mCurrentSubLocationIndex));
-
-        if (mCurrentSubLocationIndex > 0)
-        {
-          mPrevFloorButton.setEnabled(true);
-          mPrevFloorView.setBackgroundColor(Color.parseColor("#90aaaaaa"));
-        }
-        else
-        {
-          mPrevFloorButton.setEnabled(false);
-          mPrevFloorView.setBackgroundColor(Color.parseColor("#90dddddd"));
-        }
-
-        if (mCurrentSubLocationIndex + 1 < mLocation.getSubLocations().size())
-        {
-          mNextFloorButton.setEnabled(true);
-          mNextFloorView.setBackgroundColor(Color.parseColor("#90aaaaaa"));
-        }
-        else
-        {
-          mNextFloorButton.setEnabled(false);
-          mNextFloorView.setBackgroundColor(Color.parseColor("#90dddddd"));
-        }
 
         cancelVenue();
-        mLocationView.redraw();
+      //  mLocationView.redraw();
         return true;
       }
 
@@ -669,7 +667,7 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       private void cancelVenue()
       {
         mSelectedVenue = null;
-        mLocationView.redraw();
+    //    mLocationView.redraw();
       }
 
       private Venue getVenueAt(float x, float y)
