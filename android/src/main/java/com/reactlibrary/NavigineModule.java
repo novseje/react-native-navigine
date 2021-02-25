@@ -26,6 +26,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.content.pm.PackageManager;
+import java.util.Base64;
 
 import com.navigine.naviginesdk.*;
 
@@ -99,38 +100,6 @@ public class NavigineModule extends ReactContextBaseJavaModule {
     public void sampleMethod(String stringArgument, int numberArgument, Callback callback) {
         // TODO: Implement some actually useful functionality
         callback.invoke("Received numberArgument: " + numberArgument + " stringArgument: " + stringArgument);
-    }
-
-    @ReactMethod
-    public void test(Callback callback) {
-      Log.d(TAG, "NavigineSDK.initialize | START");
-              if (NavigineSDK.initialize(mContext, "D536-A0D5-4BEE-25CE", "https://api.navigine.com"))
-              {
-                Log.d(TAG, "NavigineSDK.initialize | OK");
-                boolean isLoaded = NavigineSDK.loadLocationInBackground(60019, 30,
-                  new Location.LoadListener()
-                  {
-                    @Override public void onFinished()
-                    {
-                      Log.d(TAG, "onFinished");
-                      mNavigation = NavigineSDK.getNavigation();
-                    }
-                    @Override public void onFailed(int error)
-                    {
-                      Log.d(TAG, "Error downloading location 'Navigine Demo' (error " + error + ")! " +
-                                           "Please, try again later or contact technical support");
-                    }
-                    @Override public void onUpdate(int progress)
-                    {
-                      Log.d(TAG, "Downloading location: " + progress + "%");
-                    }
-                  });
-                Log.d(TAG, "NavigineSDK.loadLocationInBackground() isLoaded? = " + isLoaded);
-              }
-
-
-        // TODO: Implement some actually useful functionality
-        callback.invoke("Received Argument");
     }
 
     @ReactMethod
@@ -239,7 +208,13 @@ public class NavigineModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void getFloorImage(Callback callback) {
       Log.d(TAG, "getFloorImage()");
-      callback.invoke("");
+
+      SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
+      Log.d(TAG, "Image:" + subLoc.getImage());
+
+      String encodedFile = new String(Base64.getEncoder().encode(subLoc.getImage().getData()));
+
+      callback.invoke(encodedFile);
     }
 
     @ReactMethod
