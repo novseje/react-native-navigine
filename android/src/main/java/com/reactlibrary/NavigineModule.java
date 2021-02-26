@@ -158,8 +158,15 @@ public class NavigineModule extends ReactContextBaseJavaModule {
                            {
                              Log.d(TAG, "onFinished");
 
+                             drawZones();
+                             drawPoints();
+                             drawVenues();
+                             drawDevice();
+
                              mNavigation = NavigineSDK.getNavigation();
                              Log.d(TAG, "mNavigation = " + mNavigation.toString());
+
+                             loadMap();
 
                              // Setting up device listener
                              if (mNavigation != null)
@@ -173,7 +180,20 @@ public class NavigineModule extends ReactContextBaseJavaModule {
                                );
                              }
 
-                             loadMap();
+                             // Setting up zone listener
+                             if (mNavigation != null)
+                             {
+                               mNavigation.setZoneListener
+                               (
+                                 new Zone.Listener()
+                                 {
+                                   @Override public void onEnterZone(Zone z) { handleEnterZone(z); }
+                                   @Override public void onLeaveZone(Zone z) { handleLeaveZone(z); }
+                                 }
+                               );
+                             }
+
+
 
                              Log.d(TAG, "init() callback");
                              initCallback.invoke("init()");
@@ -447,9 +467,13 @@ public class NavigineModule extends ReactContextBaseJavaModule {
         if (mDeviceInfo == null)
           return;
 
+        Log.d(TAG, "mDeviceInfo not null");
+
         // Check if location is loaded
         if (mLocation == null || mCurrentSubLocationIndex < 0)
           return;
+
+        Log.d(TAG, "mLocation not null");
 
         if (mDeviceInfo.isValid() && mDeviceInfo.getPaths().size() != 0) {
           if (mDeviceInfo.getPaths().get(0).getEvents().size() >= 1)
@@ -487,6 +511,8 @@ public class NavigineModule extends ReactContextBaseJavaModule {
               break;
           }
         }
+
+        Log.d(TAG, "Cur x: " + mDeviceInfo.getX() + ", y: " + mDeviceInfo.getY());
 
         // This causes map redrawing
        // mLocationView.redraw();
@@ -693,8 +719,10 @@ public class NavigineModule extends ReactContextBaseJavaModule {
         return null;
       }
 
-      private void drawPoints(Canvas canvas)
+      private void drawPoints()
       {
+        Log.d(TAG, "drawPoints()");
+
         // Check if location is loaded
         if (mLocation == null || mCurrentSubLocationIndex < 0)
           return;
@@ -705,117 +733,23 @@ public class NavigineModule extends ReactContextBaseJavaModule {
         if (subLoc == null)
           return;
 
-        final int solidColor  = Color.argb(255, 64, 163, 205);  // Light-blue color
-        final int circleColor = Color.argb(127, 64, 163, 205);  // Semi-transparent light-blue color
-        final int arrowColor  = Color.argb(255, 255, 255, 255); // White color
-        final float dp        = mDisplayDensity;
-        final float textSize  = 16 * dp;
-
-        // Preparing paints
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setStyle(Paint.Style.FILL_AND_STROKE);
-        paint.setTextSize(textSize);
-        paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-
-        // Drawing pin point (if it exists and belongs to the current sublocation)
-        if (mPinPoint != null && mPinPoint.subLocation == subLoc.getId())
-        {
-          final PointF T = mLocationView.getScreenCoordinates(mPinPoint);
-          final float tRadius = 10 * dp;
-
-          paint.setARGB(255, 0, 0, 0);
-          paint.setStrokeWidth(4 * dp);
-          canvas.drawLine(T.x, T.y, T.x, T.y - 3 * tRadius, paint);
-
-          paint.setColor(solidColor);
-          paint.setStrokeWidth(0);
-          canvas.drawCircle(T.x, T.y - 3 * tRadius, tRadius, paint);
-
-          final String text = "Make route";
-          final float textWidth = paint.measureText(text);
-          final float h  = 50 * dp;
-          final float w  = Math.max(120 * dp, textWidth + h/2);
-          final float x0 = T.x;
-          final float y0 = T.y - 75 * dp;
-
-          mPinPointRect.set(x0 - w/2, y0 - h/2, x0 + w/2, y0 + h/2);
-
-          paint.setColor(solidColor);
-          canvas.drawRoundRect(mPinPointRect, h/2, h/2, paint);
-
-          paint.setARGB(255, 255, 255, 255);
-          canvas.drawText(text, x0 - textWidth/2, y0 + textSize/4, paint);
-        }
-
-        // Drawing target point (if it exists and belongs to the current sublocation)
-        if (mTargetPoint != null && mTargetPoint.subLocation == subLoc.getId())
-        {
-          final PointF T = mLocationView.getScreenCoordinates(mTargetPoint);
-          final float tRadius = 10 * dp;
-
-          paint.setARGB(255, 0, 0, 0);
-          paint.setStrokeWidth(4 * dp);
-          canvas.drawLine(T.x, T.y, T.x, T.y - 3 * tRadius, paint);
-
-          paint.setColor(solidColor);
-          canvas.drawCircle(T.x, T.y - 3 * tRadius, tRadius, paint);
-        }
       }
 
-      private void drawVenues(Canvas canvas)
+      private void drawVenues()
       {
+        Log.d(TAG, "drawVenues()");
+
         if (mLocation == null || mCurrentSubLocationIndex < 0)
           return;
 
         SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
 
-        final float dp = mDisplayDensity;
-        final float textSize  = 16 * dp;
-        final float venueSize = 30 * dp;
-        final int   venueColor = Color.argb(255, 0xCD, 0x88, 0x50); // Venue color
-
-        Paint paint = new Paint();
-        paint.setStyle(Paint.Style.FILL_AND_STROKE);
-        paint.setStrokeWidth(0);
-        paint.setColor(venueColor);
-        paint.setTextSize(textSize);
-        paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-
-        for(int i = 0; i < subLoc.getVenues().size(); ++i)
-        {
-          Venue v = subLoc.getVenues().get(i);
-          if (v.getSubLocationId() != subLoc.getId())
-            continue;
-
-          final PointF P = mLocationView.getScreenCoordinates(v.getX(), v.getY());
-          final float x0 = P.x - venueSize/2;
-          final float y0 = P.y - venueSize/2;
-          final float x1 = P.x + venueSize/2;
-          final float y1 = P.y + venueSize/2;
-          canvas.drawBitmap(mVenueBitmap, null, new RectF(x0, y0, x1, y1), paint);
-        }
-
-        if (mSelectedVenue != null)
-        {
-          final PointF T = mLocationView.getScreenCoordinates(mSelectedVenue.getX(), mSelectedVenue.getY());
-          final float textWidth = paint.measureText(mSelectedVenue.getName());
-
-          final float h  = 50 * dp;
-          final float w  = Math.max(120 * dp, textWidth + h/2);
-          final float x0 = T.x;
-          final float y0 = T.y - 50 * dp;
-          mSelectedVenueRect.set(x0 - w/2, y0 - h/2, x0 + w/2, y0 + h/2);
-
-          paint.setColor(venueColor);
-          canvas.drawRoundRect(mSelectedVenueRect, h/2, h/2, paint);
-
-          paint.setARGB(255, 255, 255, 255);
-          canvas.drawText(mSelectedVenue.getName(), x0 - textWidth/2, y0 + textSize/4, paint);
-        }
       }
 
-      private void drawZones(Canvas canvas)
+      private void drawZones()
       {
+        Log.d(TAG, "drawZones()");
+
         // Check if location is loaded
         if (mLocation == null || mCurrentSubLocationIndex < 0)
           return;
@@ -854,12 +788,13 @@ public class NavigineModule extends ReactContextBaseJavaModule {
           int green     = (zoneColor >> 8 ) & 0xff;
           int blue      = (zoneColor >> 0 ) & 0xff;
           paint.setColor(Color.argb(selected ? 200 : 100, red, green, blue));
-          canvas.drawPath(path, paint);
         }
       }
 
-      private void drawDevice(Canvas canvas)
+      private void drawDevice()
       {
+        Log.d(TAG, "drawDevice()");
+
         // Check if location is loaded
         if (mLocation == null || mCurrentSubLocationIndex < 0)
           return;
@@ -901,7 +836,7 @@ public class NavigineModule extends ReactContextBaseJavaModule {
                 paint.setStrokeWidth(3 * dp);
                 PointF P1 = mLocationView.getScreenCoordinates(P);
                 PointF Q1 = mLocationView.getScreenCoordinates(Q);
-                canvas.drawLine(P1.x, P1.y, Q1.x, Q1.y, paint);
+              //  canvas.drawLine(P1.x, P1.y, Q1.x, Q1.y, paint);
               }
             }
           }
@@ -931,11 +866,11 @@ public class NavigineModule extends ReactContextBaseJavaModule {
         // Drawing transparent circle
         paint.setStrokeWidth(0);
         paint.setColor(circleColor);
-        canvas.drawCircle(O.x, O.y, radius, paint);
+      //  canvas.drawCircle(O.x, O.y, radius, paint);
 
         // Drawing solid circle
         paint.setColor(solidColor);
-        canvas.drawCircle(O.x, O.y, radius1, paint);
+      //  canvas.drawCircle(O.x, O.y, radius1, paint);
 
         if (ORIENTATION_ENABLED)
         {
@@ -947,7 +882,7 @@ public class NavigineModule extends ReactContextBaseJavaModule {
           path.lineTo(P.x, P.y);
           path.lineTo(S.x, S.y);
           path.lineTo(Q.x, Q.y);
-          canvas.drawPath(path, paint);
+      //    canvas.drawPath(path, paint);
         }
       }
 
