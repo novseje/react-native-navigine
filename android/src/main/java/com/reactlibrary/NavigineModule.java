@@ -481,7 +481,13 @@ public class NavigineModule extends ReactContextBaseJavaModule {
         }
         else{
         //mDirectionLayout.setVisibility(GONE);
+          Log.d(TAG, "mDeviceInfo no valid");
         }
+
+        Log.d(TAG, "TEST getSubLocationId(): " + mDeviceInfo.getSubLocationId());
+        Log.d(TAG, "TEST getX(): " + mDeviceInfo.getX());
+        Log.d(TAG, "TEST mDeviceInfo.getPaths(): " + mDeviceInfo.getPaths());
+        Log.d(TAG, "TEST getDeviceInfo(): " + mNavigation.getDeviceInfo().getY());
 
 
         if (mDeviceInfo.isValid())
@@ -539,6 +545,8 @@ public class NavigineModule extends ReactContextBaseJavaModule {
 
         mLocation = mNavigation.getLocation();
         mCurrentSubLocationIndex = -1;
+
+        Log.e(TAG, "mNavigation.getLocation(): " + mNavigation.getLocation());
 
         if (mLocation == null)
         {
@@ -888,6 +896,8 @@ public class NavigineModule extends ReactContextBaseJavaModule {
 
       private void adjustDevice()
       {
+        Log.d(TAG, "adjustDevice()");
+
         // Check if location is loaded
         if (mLocation == null || mCurrentSubLocationIndex < 0)
           return;

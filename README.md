@@ -4,9 +4,32 @@
 
 `$ npm install react-native-navigine --save`
 
+### Install for iOS
+
 Join NavigineFramework to node module in XCode.
 
 ![alt text](/extra/add-framework.png?raw=true "Xcode")
+
+### Install for Android
+Declare a broadcast receiver and job scheduler service for scanning BLE devices in Android versions >= 26.
+```xml
+<application>
+  ...
+    <service android:name="com.navigine.naviginesdk.NavigineJobService"
+        android:permission="android.permission.BIND_JOB_SERVICE"
+        android:exported="false"
+        android:enabled="true"/>
+
+    <receiver android:name="com.navigine.naviginesdk.BLEBroadcastReceiver"
+        android:enabled="true"
+        android:exported="true"
+        android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+        <intent-filter>
+            <action android:name="android.intent.action.BOOT_COMPLETED"/>
+        </intent-filter>
+    </receiver>
+</application>
+```
 
 ## Usage
 ```javascript
