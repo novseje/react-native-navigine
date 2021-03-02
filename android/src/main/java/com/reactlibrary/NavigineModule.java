@@ -240,7 +240,11 @@ public class NavigineModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void getCurPosition(Callback callback) {
       Log.d(TAG, "getCurPosition()");
-      callback.invoke("0|0");
+
+      Log.d(TAG, "Cur x: " + mDeviceInfo.getX() + ", y: " + mDeviceInfo.getY());
+      SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
+
+      callback.invoke(mDeviceInfo.getX() + "|" + (subLoc.getHeight() - mDeviceInfo.getY()));
     }
 
     @ReactMethod
