@@ -1,6 +1,5 @@
 #import "Navigine.h"
 
-#import "MBProgressHUD.h"
 #import "MapPin.h"
 #import "CurrentLocation.h"
 #import "RouteEventView.h"
