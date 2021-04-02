@@ -1,9 +1,42 @@
 {
-  "name": "react-native-navigine",
-  "title": "React Native Navigine",
-  "version": "1.0.0",
+  "_args": [
+    [
+      "github:novseje/react-native-navigine",
+      "/Users/admin/Documents/mobileApps/IndoorDemo"
+    ]
+  ],
+  "_from": "github:novseje/react-native-navigine",
+  "_id": "react-native-navigine@github:novseje/react-native-navigine#c72a4357cc7b4ccca5f446a7ac5e7c36ae578d22",
+  "_inBundle": false,
+  "_integrity": "",
+  "_location": "/react-native-navigine",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "git",
+    "raw": "github:novseje/react-native-navigine",
+    "rawSpec": "github:novseje/react-native-navigine",
+    "saveSpec": "github:novseje/react-native-navigine",
+    "fetchSpec": null,
+    "gitCommittish": null
+  },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "github:novseje/react-native-navigine#c72a4357cc7b4ccca5f446a7ac5e7c36ae578d22",
+  "_spec": "github:novseje/react-native-navigine",
+  "_where": "/Users/admin/Documents/mobileApps/IndoorDemo",
+  "author": {
+    "name": "Your Name",
+    "email": "yourname@email.com"
+  },
+  "bugs": {
+    "url": "https://github.com/github_account/react-native-navigine/issues"
+  },
   "description": "TODO",
-  "main": "index.js",
+  "devDependencies": {
+    "react": "^16.9.0",
+    "react-native": "^0.61.5"
+  },
   "files": [
     "README.md",
     "android",
@@ -11,30 +44,26 @@
     "ios",
     "react-native-navigine.podspec"
   ],
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "homepage": "https://github.com/github_account/react-native-navigine#readme",
+  "keywords": [
+    "react-native"
+  ],
+  "license": "MIT",
+  "licenseFilename": "LICENSE",
+  "main": "index.js",
+  "name": "react-native-navigine",
+  "peerDependencies": {
+    "react": "^16.8.1",
+    "react-native": ">=0.60.0-rc.0 <1.0.x"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/github_account/react-native-navigine.git",
     "baseUrl": "https://github.com/github_account/react-native-navigine"
   },
-  "keywords": [
-    "react-native"
-  ],
-  "author": {
-    "name": "Your Name",
-    "email": "yourname@email.com"
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "license": "MIT",
-  "licenseFilename": "LICENSE",
-  "readmeFilename": "README.md",
-  "peerDependencies": {
-    "react": "^16.8.1",
-    "react-native": ">=0.60.0-rc.0 <1.0.x"
-  },
-  "devDependencies": {
-    "react": "^16.9.0",
-    "react-native": "^0.61.5"
-  }
+  "title": "React Native Navigine",
+  "version": "1.0.0"
 }

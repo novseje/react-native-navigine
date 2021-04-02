@@ -2,6 +2,8 @@
 #import <React/RCTViewManager.h>
 #import <React/RCTView.h>
 #import <Navigine/Navigine.h>
+#import "MapPin/MapPin.h"
+#import "CurrentLocation/CurrentLocation.h"
 
 @class ErrorView, RouteEventView, CurrentLocation, MapPin;
 

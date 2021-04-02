@@ -7,7 +7,7 @@ if (!Navigine) {
 }
 
 let callbackFn = function (data) {
-    return data;
+    alert(data);
 }
 
 let locationDataPromise = new Promise((resolve, reject) => {

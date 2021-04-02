@@ -1,9 +1,9 @@
 #import "Navigine.h"
 
-#import "MapPin.h"
-#import "CurrentLocation.h"
-#import "RouteEventView.h"
-#import "ErrorView.h"
+#import "MapPin/MapPin.h"
+#import "CurrentLocation/CurrentLocation.h"
+#import "RouteEventView/RouteEventView.h"
+#import "ErrorView/ErrorView.h"
 
 @implementation Navigine
 
