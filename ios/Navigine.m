@@ -63,6 +63,15 @@ RCT_EXPORT_METHOD(getFloorImage: (RCTResponseSenderBlock)callback)
     callback(@[[NSString stringWithFormat: @"%@", [self encodeToBase64String:floorImg]]]);
 }
 
+RCT_EXPORT_METHOD(getAzimuth: (RCTResponseSenderBlock)callback)
+{
+    NSLog( @"getAzimuth" );
+
+    NSLog( @"getAzimuth: %f", _azimuth);
+
+    callback(@[[NSString stringWithFormat: @"%f", _azimuth]]);
+}
+
 RCT_EXPORT_METHOD(getCurPosition: (RCTResponseSenderBlock)callback)
 {
     NSLog( @"getCurPosition" );
@@ -363,6 +372,8 @@ NSLog( @"deviceInfo.y: %@", deviceInfo.y);
       _curPosition.center = [self convertMetersToPixels: [deviceInfo.x floatValue]: [deviceInfo.y floatValue] withScale: _zoomScale];
       _curPosition.radius = deviceInfo.r * radScale;
 NSLog( @"curPosition: %f, %f", _curPosition.center.x, _curPosition.center.y);
+      _azimuth = deviceInfo.azimuth;
+NSLog( @"azimuth: %f", deviceInfo.azimuth);
     }
   }
   else {

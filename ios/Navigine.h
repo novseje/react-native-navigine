@@ -30,6 +30,7 @@ NavigineCoreBluetoothDelegate
 @property (nonatomic, assign) float floorImageWidth;
 @property (nonatomic, assign) float floorViewHeight;
 @property (nonatomic, assign) float floorViewWidth;
+@property (nonatomic, assign) float azimuth;
 
 // Path
 @property (nonatomic, strong) UIBezierPath *routePath;

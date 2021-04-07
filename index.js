@@ -51,6 +51,17 @@ const NaviginePlugin = {
         return {x: parseFloat(coords[0]), y: parseFloat(coords[1]) };
     },
 
+    getAzimuth: async function () {
+        let getAzimuthPromise = new Promise((resolve, reject) => {
+            Navigine.getAzimuth(function (data) {
+                resolve(data);
+            });
+        });
+        let response = await getAzimuthPromise;
+
+        return parseFloat(response);
+    },
+
     getFloorImageSizes: async function () {
         let getFloorImageSizesPromise = new Promise((resolve, reject) => {
             Navigine.getFloorImageSizes(function (data) {

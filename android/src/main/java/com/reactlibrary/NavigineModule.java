@@ -248,6 +248,15 @@ public class NavigineModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void getAzimuth(Callback callback) {
+      Log.d(TAG, "getAzimuth()");
+
+      Log.d(TAG, "getAzimuth: " + mDeviceInfo.azimuth());
+
+      callback.invoke(mDeviceInfo.getAzimuth());
+    }
+
+    @ReactMethod
     public void getFloorImageSizes(Callback callback) {
       Log.d(TAG, "getFloorImageSizes()");
 
