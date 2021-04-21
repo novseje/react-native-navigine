@@ -82,6 +82,10 @@ const NaviginePlugin = {
         let response = await getZoomScalePromise;
         return parseFloat(response);
     },
+    
+    didEnterZones: function (callback) {
+        Navigine.didEnterZones(callback);
+    },
 
     getFloorImage222: async function () {
         Navigine.getFloorImage(callbackFn);

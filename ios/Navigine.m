@@ -7,6 +7,8 @@
 
 @implementation Navigine
 
+static NSMutableArray* zonesCollect;
+
 RCT_EXPORT_MODULE(Navigine)
 
 RCT_EXPORT_METHOD(init:(RCTResponseSenderBlock)callback)
@@ -39,6 +41,8 @@ RCT_EXPORT_METHOD(init:(RCTResponseSenderBlock)callback)
                 NSLog( @"failBlock" );
                 NSLog(@"%@",error);
             }];
+
+         zonesCollect = [[NSMutableArray alloc] init];
 
 NSLog( @"end of initNav" );
 
@@ -99,6 +103,16 @@ RCT_EXPORT_METHOD(getZoomScale: (RCTResponseSenderBlock)callback)
     callback(@[[NSString stringWithFormat: @"%f", _zoomScale]]);
 }
 
+RCT_EXPORT_METHOD(didEnterZones:(RCTResponseSenderBlock)callback)
+{
+NSLog( @"didEnterZones" );
+
+    // loop through every element (dynamic typing)
+    for (id zone in zonesCollect) {
+        NSLog(@"Single element: %@", zone);
+    }
+}
+
 RCT_EXPORT_METHOD(sampleMethod:(NSString *)stringArgument numberParameter:(nonnull NSNumber *)numberArgument callback:(RCTResponseSenderBlock)callback)
 {
     // TODO: Implement some actually useful functionality
@@ -154,6 +168,18 @@ NSLog( @"imgSize_width: %f, imgSize_height: %f", imgSize.width, imgSize.height )
 
 //  [self drawZones];
 //  [self drawVenues];
+
+
+
+NCLocationPoint *targetPt = [NCLocationPoint pointWithLocation: _location.id
+                                                     sublocation: _sublocation.id
+                                                               x: @(10)
+                                                               y: @(10)];
+  [_navigineCore cancelTargets];
+  [_navigineCore setTarget:targetPt];
+  _isRouting = YES;
+
+
 }
 
 #pragma mark Handlers
@@ -197,6 +223,7 @@ NSLog( @"imgSize_width: %f, imgSize_height: %f", imgSize.width, imgSize.height )
 
 // Draw route by long tap
 - (void) longTapOnMap:(UITapGestureRecognizer *)gesture {
+NSLog( @"longTapOnMap" );
   if (gesture.state != UIGestureRecognizerStateBegan) return;
 
   [[_imageView viewWithTag:1] removeFromSuperview]; // Remove destination pin from map
@@ -382,6 +409,7 @@ NSLog( @"azimuth: %f", deviceInfo.azimuth);
     _errorView.hidden = NO;
   }
   if (_isRouting) {
+NSLog( @"ROUTING: YES");
     NCRoutePath *devicePath = deviceInfo.paths.firstObject;
     if (devicePath) {
       NCLocalPoint *lastPoint = devicePath.points.lastObject;
@@ -400,7 +428,10 @@ NSLog( @"azimuth: %f", deviceInfo.azimuth);
 }
 
 - (void)navigineCore:(NavigineCore *)navigineCore didEnterZone:(NCZone *)zone {
-  NSLog(@"Enter zone: %@", zone);
+
+NSLog(@"Enter zone: %@", zone);
+
+    [zonesCollect addObject:zone];
 }
 
 - (void)navigineCore:(NavigineCore *)navigineCore didExitZone:(NCZone *)zone {
