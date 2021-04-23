@@ -82,9 +82,36 @@ const NaviginePlugin = {
         let response = await getZoomScalePromise;
         return parseFloat(response);
     },
-    
-    didEnterZones: function (callback) {
-        Navigine.didEnterZones(callback);
+
+    didEnterZones: async function () {
+        let didEnterZonesPromise = new Promise((resolve, reject) => {
+            Navigine.didEnterZones(function (data) {
+                resolve(data);
+            });
+        });
+        let response = await didEnterZonesPromise;
+        console.log('didEnterZonesPromise: '+ response);
+        if (response) {
+            let name = response.toString();
+            let zones = [{name: name}];
+            return zones;
+        } else {
+            return null;
+        }
+    },
+
+    // TEMPORARY
+    getLastZoneName: async function () {
+        let zones = await this.didEnterZones();
+        console.log('getLastZoneName/zones: '+ zones);
+        if (zones) {
+            var last_element = zones[zones.length - 1];
+            console.log('getLastZoneName/last_element: '+ last_element);
+            console.log('getLastZoneName/last_element.name: '+ last_element.name);
+            return last_element.name;
+        } else {
+            return false;
+        }
     },
 
     getFloorImage222: async function () {

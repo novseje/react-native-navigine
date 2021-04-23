@@ -107,10 +107,19 @@ RCT_EXPORT_METHOD(didEnterZones:(RCTResponseSenderBlock)callback)
 {
 NSLog( @"didEnterZones" );
 
-    // loop through every element (dynamic typing)
-    for (id zone in zonesCollect) {
-        NSLog(@"Single element: %@", zone);
+    if ([zonesCollect count] < 1) {
+        callback(@[[NSString stringWithFormat: @""]]);
     }
+
+    // loop through every element (dynamic typing)
+    for (NCZone *zone in zonesCollect) {
+        NSLog(@"Single element: %@", zone);
+        NSLog(@"Zone name: %@", zone.name);
+    }
+
+    NCZone *zone = [zonesCollect lastObject];
+
+    callback(@[[NSString stringWithFormat: @"%@", zone.name]]);
 }
 
 RCT_EXPORT_METHOD(sampleMethod:(NSString *)stringArgument numberParameter:(nonnull NSNumber *)numberArgument callback:(RCTResponseSenderBlock)callback)
