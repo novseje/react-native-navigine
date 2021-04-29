@@ -8,6 +8,7 @@
 @implementation Navigine
 
 static NSMutableArray* zonesCollect;
+static NSMutableArray* routePathPoints;
 
 RCT_EXPORT_MODULE(Navigine)
 
@@ -43,6 +44,7 @@ RCT_EXPORT_METHOD(init:(RCTResponseSenderBlock)callback)
             }];
 
          zonesCollect = [[NSMutableArray alloc] init];
+         routePathPoints = [[NSMutableArray alloc] init];
 
 NSLog( @"end of initNav" );
 
@@ -109,6 +111,7 @@ NSLog( @"didEnterZones" );
 
     if ([zonesCollect count] < 1) {
         callback(@[[NSString stringWithFormat: @""]]);
+        return;
     }
 
     // loop through every element (dynamic typing)
@@ -120,6 +123,14 @@ NSLog( @"didEnterZones" );
     NCZone *zone = [zonesCollect lastObject];
 
     callback(@[[NSString stringWithFormat: @"%@", zone.name]]);
+}
+
+RCT_EXPORT_METHOD(getRoutePoints:(RCTResponseSenderBlock)callback)
+{
+NSLog( @"getRoutePoints" );
+
+    ;
+
 }
 
 RCT_EXPORT_METHOD(sampleMethod:(NSString *)stringArgument numberParameter:(nonnull NSNumber *)numberArgument callback:(RCTResponseSenderBlock)callback)
@@ -278,6 +289,7 @@ NSLog( @"_zoomScale: %f", _zoomScale);
 }
 
 - (void) drawRouteWithPath: (NSArray *)path andDistance: (float)distance {
+NSLog( @"drawRouteWithPath" );
   if (distance <= 3.) { // Check that we are close to the finish point of the route
     [self stopRoute];
   }
@@ -286,15 +298,29 @@ NSLog( @"_zoomScale: %f", _zoomScale);
     [_routePath removeAllPoints];
     _routeLayer = [CAShapeLayer layer];
     _routePath = [[UIBezierPath alloc] init];
+
+    [routePathPoints removeAllObjects];
+
     for (NCLocationPoint *point in path) {
+NSLog( @"NCLocationPoint: %@", point);
       if (point.sublocation != _sublocation.id) // If path between different sublocations
+      {
+        NSLog( @"path between different sublocations");
         continue;
+      }
       else {
-        CGPoint cgPoint = [self convertMetersToPixels:point.x.floatValue:point.y.floatValue withScale:_scrollView.zoomScale];
-        if (_routePath.empty)
+        CGPoint cgPoint = [self convertMetersToPixels:point.x.floatValue:point.y.floatValue withScale:_zoomScale];
+          NSLog( @"CGPoint: x: %f, y: %f", cgPoint.x, cgPoint.y);
+          [routePathPoints addObject:[NSValue valueWithCGPoint:cgPoint]];
+        if (_routePath.empty) {
           [_routePath moveToPoint:cgPoint];
-        else
+          NSLog( @"moveToPoint" );
+        }
+        else {
           [_routePath addLineToPoint:cgPoint];
+          NSLog( @"addLineToPoint" );
+        }
+
       }
     }
   }

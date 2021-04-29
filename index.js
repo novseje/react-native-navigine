@@ -114,6 +114,21 @@ const NaviginePlugin = {
         }
     },
 
+    getRoutePoints: async function () {
+        let getRoutePointsPromise = new Promise((resolve, reject) => {
+            Navigine.getRoutePoints(function (data) {
+                resolve(data);
+            });
+        });
+        let response = await getRoutePointsPromise;
+        console.log('getRoutePoints: '+ response);
+        if (response) {
+            return [];
+        } else {
+            return null;
+        }
+    },
+
     getFloorImage222: async function () {
         Navigine.getFloorImage(callbackFn);
     },
