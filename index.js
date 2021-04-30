@@ -123,7 +123,12 @@ const NaviginePlugin = {
         let response = await getRoutePointsPromise;
         console.log('getRoutePoints: '+ response);
         if (response) {
-            return [];
+            let json = JSON.parse(response);
+            if (json) {
+                return json;
+            } else {
+                return null
+            }
         } else {
             return null;
         }

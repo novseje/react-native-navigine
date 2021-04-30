@@ -127,10 +127,21 @@ NSLog( @"didEnterZones" );
 
 RCT_EXPORT_METHOD(getRoutePoints:(RCTResponseSenderBlock)callback)
 {
-NSLog( @"getRoutePoints" );
+    NSLog( @"getRoutePoints" );
 
-    ;
+    NSMutableArray *pointsArray = [[NSMutableArray alloc] init];
+    for (NSValue *point in routePathPoints) {
+        NSLog( @"NSValue: %@", point );
+        NSLog( @"NSValue.x: %f", [point CGPointValue].x );
+        [pointsArray addObject:[NSString stringWithFormat: @"{x: %f, y: %f}", [point CGPointValue].x, [point CGPointValue].y]];
+        NSLog( @"addObject: %@", @[[NSString stringWithFormat: @"{x: %f, y: %f}", [point CGPointValue].x, [point CGPointValue].y]] );
+    }
+    NSLog( @"pointsArray: %@", pointsArray );
+    
+    NSString *pointsString = [NSString stringWithFormat: @"[%@]", [pointsArray componentsJoinedByString: @", "]];
+    NSLog( @"pointsString: %@", pointsString );
 
+    callback(@[pointsString]);
 }
 
 RCT_EXPORT_METHOD(sampleMethod:(NSString *)stringArgument numberParameter:(nonnull NSNumber *)numberArgument callback:(RCTResponseSenderBlock)callback)
