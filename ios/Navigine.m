@@ -133,11 +133,16 @@ RCT_EXPORT_METHOD(getRoutePoints:(RCTResponseSenderBlock)callback)
     for (NSValue *point in routePathPoints) {
         NSLog( @"NSValue: %@", point );
         NSLog( @"NSValue.x: %f", [point CGPointValue].x );
-        [pointsArray addObject:[NSString stringWithFormat: @"{x: %f, y: %f}", [point CGPointValue].x, [point CGPointValue].y]];
+        [pointsArray addObject:[NSString stringWithFormat: @"{\"x\": %f, \"y\": %f}", [point CGPointValue].x * _zoomScale, [point CGPointValue].y * _zoomScale]];
+/*
+        const CGFloat dstX = (_floorImageWidth / _zoomScale) * [point CGPointValue].x / _sublocation.dimensions.width;
+        const CGFloat dstY = (_floorImageHeight / _zoomScale) * (1. - [point CGPointValue].y / _sublocation.dimensions.height);
+        [pointsArray addObject:[NSString stringWithFormat: @"{\"x\": %f, \"y\": %f}", dstX, dstY]];
+*/
         NSLog( @"addObject: %@", @[[NSString stringWithFormat: @"{x: %f, y: %f}", [point CGPointValue].x, [point CGPointValue].y]] );
     }
     NSLog( @"pointsArray: %@", pointsArray );
-    
+
     NSString *pointsString = [NSString stringWithFormat: @"[%@]", [pointsArray componentsJoinedByString: @", "]];
     NSLog( @"pointsString: %@", pointsString );
 
@@ -204,7 +209,7 @@ NSLog( @"imgSize_width: %f, imgSize_height: %f", imgSize.width, imgSize.height )
 
 NCLocationPoint *targetPt = [NCLocationPoint pointWithLocation: _location.id
                                                      sublocation: _sublocation.id
-                                                               x: @(10)
+                                                               x: @(100)
                                                                y: @(10)];
   [_navigineCore cancelTargets];
   [_navigineCore setTarget:targetPt];
