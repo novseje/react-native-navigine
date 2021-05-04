@@ -30,6 +30,7 @@ import java.util.Base64;
 
 import com.navigine.naviginesdk.*;
 
+import java.util.ArrayList;
 
 
 public class NavigineModule extends ReactContextBaseJavaModule {
@@ -84,6 +85,8 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       private Zone    mSelectedZone   = null;
 
       private Callback       initCallback   = null;
+
+      private ArrayList<Zone> zonesCollect = new ArrayList<Zone>();
 
 
     public NavigineModule(ReactApplicationContext reactContext) {
@@ -264,6 +267,28 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       Log.d(TAG, String.format(Locale.ENGLISH, "Loading sublocation %s (%.2f x %.2f)", subLoc.getName(), subLoc.getWidth(), subLoc.getHeight()));
 
       callback.invoke(subLoc.getWidth() + "|" + subLoc.getHeight());
+    }
+
+    @ReactMethod
+    public void didEnterZones(Callback callback) {
+      Log.d(TAG, "didEnterZones()");
+
+      if (this.zonesCollect.size() < 1) {
+        callback.invoke("");
+      }
+
+      for (Zone z : zonesCollect) {
+        Log.d(TAG, "ZONE: " + z.getName());
+      }
+
+      Zone z = this.zonesCollect.get(this.zonesCollect.size() - 1);
+      callback.invoke(z.getName());
+    }
+
+    @ReactMethod
+    public void getRoutePoints(Callback callback) {
+      Log.d(TAG, "getRoutePoints()");
+      callback.invoke("[]");
     }
 
     @ReactMethod
@@ -461,6 +486,7 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       private void handleEnterZone(Zone z)
       {
         Log.d(TAG, "Enter zone " + z.getName());
+        this.zonesCollect.add(z);
       }
 
       private void handleLeaveZone(Zone z)
