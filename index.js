@@ -134,6 +134,17 @@ const NaviginePlugin = {
         }
     },
 
+    setRouteDestination: async function (x, y) {
+        console.log('setRouteDestination: '+ x + ', ' + y);
+        let setRouteDestinationPromise = new Promise((resolve, reject) => {
+            Navigine.setRouteDestination(x, y, function (data) {
+                resolve(data);
+            });
+        });
+        let response = await setRouteDestinationPromise;
+        return response;
+    },
+
     getFloorImage222: async function () {
         Navigine.getFloorImage(callbackFn);
     },

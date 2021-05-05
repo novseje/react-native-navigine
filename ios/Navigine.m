@@ -149,6 +149,21 @@ RCT_EXPORT_METHOD(getRoutePoints:(RCTResponseSenderBlock)callback)
     callback(@[pointsString]);
 }
 
+RCT_EXPORT_METHOD(setRouteDestination:(float)x yParameter:(float)y callback:(RCTResponseSenderBlock)callback)
+{
+    NSLog( @"setRouteDestination: x: %f, y: %f", x, y );
+    CGPoint touchPtInM = [self convertPixelsToMeters: x:y withScale:1]; // Touch point in meters
+    NCLocationPoint *targetPt = [NCLocationPoint pointWithLocation: _location.id
+                                                       sublocation: _sublocation.id
+                                                                 x: @(touchPtInM.x)
+                                                                 y: @(touchPtInM.y)];
+    NSLog( @"NCLocationPoint: x: %f, y: %f", touchPtInM.x, touchPtInM.y );
+    [_navigineCore cancelTargets];
+    [_navigineCore setTarget:targetPt];
+    _isRouting = YES;
+    callback(@[[NSString stringWithFormat: @"OK"]]);
+}
+
 RCT_EXPORT_METHOD(sampleMethod:(NSString *)stringArgument numberParameter:(nonnull NSNumber *)numberArgument callback:(RCTResponseSenderBlock)callback)
 {
     // TODO: Implement some actually useful functionality
@@ -209,8 +224,8 @@ NSLog( @"imgSize_width: %f, imgSize_height: %f", imgSize.width, imgSize.height )
 
 NCLocationPoint *targetPt = [NCLocationPoint pointWithLocation: _location.id
                                                      sublocation: _sublocation.id
-                                                               x: @(100)
-                                                               y: @(10)];
+                                                               x: @(35)
+                                                               y: @(12)];
   [_navigineCore cancelTargets];
   [_navigineCore setTarget:targetPt];
   _isRouting = YES;
@@ -289,8 +304,8 @@ NSLog( @"longTapOnMap" );
 
 // Convert from pixels to meters
 - (CGPoint) convertPixelsToMeters:(float)srcX :(float)srcY withScale :(float)scale {
-  const CGFloat dstX = srcX / (_imageView.width / scale) * _sublocation.dimensions.width;
-  const CGFloat dstY = (1. - srcY / (_imageView.height / scale)) * _sublocation.dimensions.height;
+  const CGFloat dstX = srcX / (_floorImageWidth / scale) * _sublocation.dimensions.width;
+  const CGFloat dstY = (1. - srcY / (_floorImageHeight / scale)) * _sublocation.dimensions.height;
   return CGPointMake(dstX, dstY);
 }
 
