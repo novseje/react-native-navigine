@@ -196,7 +196,15 @@ public class NavigineModule extends ReactContextBaseJavaModule {
                                );
                              }
 
-
+                            Log.d(TAG, "SET ROUTING");
+                            PointF P = new PointF(35.0f, 16.0f);
+                            SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
+                            mPinPoint = new LocationPoint(mLocation.getId(), subLoc.getId(), P.x, P.y);
+                            mTargetPoint  = mPinPoint;
+                            mNavigation.setTarget(mTargetPoint);
+ Log.d(TAG, "makePin");
+                            makePin(P);
+                            //cancelVenue();
 
                              Log.d(TAG, "init() callback");
                              initCallback.invoke("init()");
@@ -247,6 +255,8 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       Log.d(TAG, "Cur x: " + mDeviceInfo.getX() + ", y: " + mDeviceInfo.getY());
       SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
 
+      Log.d(TAG, "Location size: x: " + subLoc.getWidth() + ", y: " + subLoc.getHeight());
+
       callback.invoke(mDeviceInfo.getX() + "|" + (subLoc.getHeight() - mDeviceInfo.getY()));
     }
 
@@ -275,6 +285,7 @@ public class NavigineModule extends ReactContextBaseJavaModule {
 
       if (this.zonesCollect.size() < 1) {
         callback.invoke("");
+        return;
       }
 
       for (Zone z : zonesCollect) {
@@ -288,7 +299,71 @@ public class NavigineModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void getRoutePoints(Callback callback) {
       Log.d(TAG, "getRoutePoints()");
+Log.d(TAG, "PATHS COUNT: " + String.valueOf(mDeviceInfo.getPaths().size()));
+      if (mDeviceInfo.getPaths() != null && mDeviceInfo.getPaths().size() > 0)
+      {
+        RoutePath path = mDeviceInfo.getPaths().get(0);
+        Log.d(TAG, "PATH SIZE: " + String.valueOf(path.getPoints().size()));
+        if (path.getPoints().size() >= 2)
+        {
+          SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
+
+          ArrayList<String> pointsArray = new ArrayList<String>();
+          for(int j = 0; j < path.getPoints().size(); j++)
+          {
+
+            LocationPoint Q = path.getPoints().get(j);
+Log.d(TAG, "Q.x = " + String.valueOf(Q.x));
+
+              pointsArray.add("{\"x\": "+ String.valueOf(Q.x) + ", \"y\": " + String.valueOf(subLoc.getHeight() - Q.y) + "}");
+            //  canvas.drawLine(P1.x, P1.y, Q1.x, Q1.y, paint);
+
+
+            //Log.d(TAG, "Cur x: " + mDeviceInfo.getX() + ", y: " + mDeviceInfo.getY());
+            //      SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
+
+              //    callback.invoke(mDeviceInfo.getX() + "|" + (subLoc.getHeight() - mDeviceInfo.getY()));
+
+          }
+          String pointsString = "[";
+          for (String s : pointsArray)
+          {
+            pointsString += s + ", ";
+          }
+          pointsString = pointsString.replaceAll(",\\s*$", "");
+          pointsString += "]";
+          callback.invoke(pointsString);
+          return;
+        }
+      }
+
+
       callback.invoke("[]");
+    }
+
+    @ReactMethod
+    public void setRouteDestination(float x, float y, Callback callback) {
+      Log.d(TAG, String.format(Locale.ENGLISH, "setRouteDestination: x:%.2f, y:%.2f)", x, y));
+
+      if (mLocation != null && mCurrentSubLocationIndex >= 0) {
+        SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
+        if (subLoc != null) {
+          mPinPoint = new LocationPoint(mLocation.getId(), subLoc.getId(), x, subLoc.getHeight() - y);
+          Log.d(TAG, "mPinPoint");
+          if (mPinPoint != null)
+          {
+              mTargetPoint  = mPinPoint;
+              mTargetVenue  = null;
+              mPinPoint     = null;
+              mNavigation.setTarget(mTargetPoint);
+              Log.d(TAG, "setTarget");
+              cancelPin();
+          }
+        }
+      }
+
+
+      callback.invoke("OK");
     }
 
     @ReactMethod
@@ -692,7 +767,8 @@ public class NavigineModule extends ReactContextBaseJavaModule {
 
         mPinPoint = new LocationPoint(mLocation.getId(), subLoc.getId(), P.x, P.y);
         mPinPointRect = new RectF();
-        mLocationView.redraw();
+        Log.d(TAG, "makePin <END>");
+        //mLocationView.redraw();
       }
 
       private void cancelPin()
@@ -709,7 +785,7 @@ public class NavigineModule extends ReactContextBaseJavaModule {
 
         mPinPoint = null;
         mPinPointRect = null;
-        mLocationView.redraw();
+        //mLocationView.redraw();
       }
 
       private void cancelVenue()
@@ -982,9 +1058,9 @@ public class NavigineModule extends ReactContextBaseJavaModule {
             //mDirectionImageView.setBackgroundResource(R.drawable.ic_escalator);
             break;
         }
-        float nextTurnDistance = Math.max(path.getEvents().get(0).getDistance(), 1);
-        mDirectionTextView.setText(String.format(Locale.ENGLISH,"%.0f m", nextTurnDistance));
-        mDirectionLayout.setVisibility(View.VISIBLE);
+        //float nextTurnDistance = Math.max(path.getEvents().get(0).getDistance(), 1);
+        //mDirectionTextView.setText(String.format(Locale.ENGLISH,"%.0f m", nextTurnDistance));
+        //mDirectionLayout.setVisibility(View.VISIBLE);
       }
 
       private String getLogFile(String extension)
