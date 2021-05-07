@@ -10,6 +10,8 @@ Join NavigineFramework to node module in XCode.
 
 ![alt text](/extra/add-framework.png?raw=true "Xcode")
 
+Note: After every "pod install" command, you need to set this checkbox again.
+
 ### Install for Android
 Declare a broadcast receiver and job scheduler service for scanning BLE devices in Android versions >= 26.
 ```xml
