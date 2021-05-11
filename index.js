@@ -21,15 +21,21 @@ const NaviginePlugin = {
         Navigine.init(callback);
     },
 
+    // TODO
     setApiKey: function (apiKey: string) {
 
     },
 
+    // NOT IN USE
     getLocationData: async function () {
         let response = await locationDataPromise;
         return response;
     },
 
+    /**
+     * Get active floor image data encoded in Base64
+     * @returns {String} Image data in Base64
+     */
     getFloorImage: async function () {
         let getFloorImagePromise = new Promise((resolve, reject) => {
             Navigine.getFloorImage(function (data) {
@@ -40,6 +46,10 @@ const NaviginePlugin = {
         return response;
     },
 
+    /**
+     * Get current device position
+     * @returns {Object} Positin in floor {x: 0.0, y: 0.0} in pixels
+     */
     getCurPosition: async function () {
         let getCurPositionPromise = new Promise((resolve, reject) => {
             Navigine.getCurPosition(function (data) {
@@ -51,6 +61,10 @@ const NaviginePlugin = {
         return {x: parseFloat(coords[0]), y: parseFloat(coords[1]) };
     },
 
+    /**
+     * Get Azimuth (device orientation)
+     * @returns Azimuth value in radians
+     */
     getAzimuth: async function () {
         let getAzimuthPromise = new Promise((resolve, reject) => {
             Navigine.getAzimuth(function (data) {
@@ -62,6 +76,10 @@ const NaviginePlugin = {
         return parseFloat(response);
     },
 
+    /**
+     * Get active floor image sizes (width and height) in pixels
+     * @returns {Object} Image size {x: 0, y: 0}
+     */
     getFloorImageSizes: async function () {
         let getFloorImageSizesPromise = new Promise((resolve, reject) => {
             Navigine.getFloorImageSizes(function (data) {
@@ -70,9 +88,13 @@ const NaviginePlugin = {
         });
         let response = await getFloorImageSizesPromise;
         let coords = response.split('|');
-        return {x: parseFloat(coords[0]), y: parseFloat(coords[1]) };
+        return {x: parseInt(coords[0]), y: parseInt(coords[1]) };
     },
 
+    /**
+     * Get floor image scale (relatively device width)
+     * @returns {float} scale
+     */
     getZoomScale: async function () {
         let getZoomScalePromise = new Promise((resolve, reject) => {
             Navigine.getZoomScale(function (data) {
@@ -83,6 +105,10 @@ const NaviginePlugin = {
         return parseFloat(response);
     },
 
+    /**
+     * Return array of all entered zones
+     * @returns array of zones [{name: 'ZONE_NAME'}]
+     */
     didEnterZones: async function () {
         let didEnterZonesPromise = new Promise((resolve, reject) => {
             Navigine.didEnterZones(function (data) {
@@ -100,7 +126,11 @@ const NaviginePlugin = {
         }
     },
 
-    // TEMPORARY
+    /**
+     * Return name of last entered zone
+     * TEMPORARY FUNCTION
+     * @returns {String} zone name
+     */
     getLastZoneName: async function () {
         let zones = await this.didEnterZones();
         console.log('getLastZoneName/zones: '+ zones);
@@ -114,6 +144,11 @@ const NaviginePlugin = {
         }
     },
 
+    /**
+     * Get array of (only first) route points
+     * point object formai is {x: 0.0, y: 0.0}
+     * @returns array of all points [{x: 0.0, y: 0.0}]
+     */
     getRoutePoints: async function () {
         let getRoutePointsPromise = new Promise((resolve, reject) => {
             Navigine.getRoutePoints(function (data) {
@@ -134,6 +169,12 @@ const NaviginePlugin = {
         }
     },
 
+    /**
+     * Set destionation point to routing
+     * @param x floor position in pixels
+     * @param y floor position in pixels
+     * @returns 'OK' if OK
+     */
     setRouteDestination: async function (x, y) {
         console.log('setRouteDestination: '+ x + ', ' + y);
         let setRouteDestinationPromise = new Promise((resolve, reject) => {
