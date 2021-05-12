@@ -5,6 +5,8 @@
 #import "RouteEventView/RouteEventView.h"
 #import "ErrorView/ErrorView.h"
 
+#define DEBUG_LOG NO
+
 @implementation Navigine
 
 static NSMutableArray* zonesCollect;
@@ -23,14 +25,14 @@ RCT_EXPORT_METHOD(init:(RCTResponseSenderBlock)callback)
         // If YES, the content data would be loaded even if the same version has been downloaded already earlier.
         // If NO, the download process compares the current downloaded version with the last version on the server.
         // If server version equals to the current downloaded version, the re-downloading is not done.
-        NSLog( @"Before navigineCore" );
+        if(DEBUG_LOG) NSLog( @"Before navigineCore" );
         [_navigineCore downloadLocationById:_locationId forceReload:forced
             processBlock:^(NSInteger loadProcess) {
-                NSLog( @"processBlock" );
-                NSLog(@"%zd",loadProcess);
+                if(DEBUG_LOG) NSLog( @"processBlock" );
+                if(DEBUG_LOG) NSLog(@"%zd",loadProcess);
             } successBlock:^(NSDictionary *userInfo) {
-                NSLog( @"successBlock" );
-                NSLog( @"%@", self->_navigineCore.location.name );
+                if(DEBUG_LOG) NSLog( @"successBlock" );
+                if(DEBUG_LOG) NSLog( @"%@", self->_navigineCore.location.name );
 
                 [self->_navigineCore startNavigine];
                 [self setupFloor: self.floor];
@@ -39,15 +41,14 @@ RCT_EXPORT_METHOD(init:(RCTResponseSenderBlock)callback)
 
                 callback(@[[NSString stringWithFormat: @"numberArgument: %ld stringArgument: %@", (long)_navigineCore.location.id, _navigineCore.location.name]]);
             } failBlock:^(NSError *error) {
-                NSLog( @"failBlock" );
+                if(DEBUG_LOG) NSLog( @"failBlock" );
                 NSLog(@"%@",error);
             }];
 
          zonesCollect = [[NSMutableArray alloc] init];
          routePathPoints = [[NSMutableArray alloc] init];
 
-NSLog( @"end of initNav" );
-
+        if(DEBUG_LOG) NSLog( @"end of initNav" );
 }
 
 RCT_EXPORT_METHOD(getLocationData: (RCTResponseSenderBlock)callback)
@@ -60,7 +61,7 @@ RCT_EXPORT_METHOD(getLocationData: (RCTResponseSenderBlock)callback)
 
 RCT_EXPORT_METHOD(getFloorImage: (RCTResponseSenderBlock)callback)
 {
-    NSLog( @"getFloorImage" );
+    if(DEBUG_LOG) NSLog( @"getFloorImage" );
 
     _location = _navigineCore.location;
     _sublocation = _navigineCore.location.sublocations[_floor];
@@ -71,43 +72,38 @@ RCT_EXPORT_METHOD(getFloorImage: (RCTResponseSenderBlock)callback)
 
 RCT_EXPORT_METHOD(getAzimuth: (RCTResponseSenderBlock)callback)
 {
-    NSLog( @"getAzimuth" );
-
-    NSLog( @"getAzimuth: %f", _azimuth);
+    if(DEBUG_LOG) NSLog( @"getAzimuth: %f", _azimuth);
 
     callback(@[[NSString stringWithFormat: @"%f", _azimuth]]);
 }
 
 RCT_EXPORT_METHOD(getCurPosition: (RCTResponseSenderBlock)callback)
 {
-    NSLog( @"getCurPosition" );
-
-    NSLog( @"curPosition: %f, %f, zoom: %f", _curPosition.center.x, _curPosition.center.y, _zoomScale);
+    if(DEBUG_LOG) NSLog( @"getCurPosition" );
+    if(DEBUG_LOG) NSLog( @"curPosition: %f, %f, zoom: %f", _curPosition.center.x, _curPosition.center.y, _zoomScale);
 
     callback(@[[NSString stringWithFormat: @"%f|%f", _curPosition.center.x * _zoomScale, _curPosition.center.y * _zoomScale]]);
 }
 
 RCT_EXPORT_METHOD(getFloorImageSizes: (RCTResponseSenderBlock)callback)
 {
-    NSLog( @"getFloorImageSizes" );
-
-    NSLog( @"floorImageSizes: %f|%f", _floorImageWidth, _floorImageHeight);
+    if(DEBUG_LOG) NSLog( @"getFloorImageSizes" );
+    if(DEBUG_LOG) NSLog( @"floorImageSizes: %f|%f", _floorImageWidth, _floorImageHeight);
 
     callback(@[[NSString stringWithFormat: @"%f|%f", _floorImageWidth, _floorImageHeight]]);
 }
 
 RCT_EXPORT_METHOD(getZoomScale: (RCTResponseSenderBlock)callback)
 {
-    NSLog( @"getZoomScale" );
-
-    NSLog( @"zoomScale: %f", _zoomScale);
+    if(DEBUG_LOG) NSLog( @"getZoomScale" );
+    if(DEBUG_LOG) NSLog( @"zoomScale: %f", _zoomScale);
 
     callback(@[[NSString stringWithFormat: @"%f", _zoomScale]]);
 }
 
 RCT_EXPORT_METHOD(didEnterZones:(RCTResponseSenderBlock)callback)
 {
-NSLog( @"didEnterZones" );
+    if(DEBUG_LOG) NSLog( @"didEnterZones" );
 
     if ([zonesCollect count] < 1) {
         callback(@[[NSString stringWithFormat: @""]]);
@@ -116,8 +112,8 @@ NSLog( @"didEnterZones" );
 
     // loop through every element (dynamic typing)
     for (NCZone *zone in zonesCollect) {
-        NSLog(@"Single element: %@", zone);
-        NSLog(@"Zone name: %@", zone.name);
+        if(DEBUG_LOG) NSLog(@"Single element: %@", zone);
+        if(DEBUG_LOG) NSLog(@"Zone name: %@", zone.name);
     }
 
     NCZone *zone = [zonesCollect lastObject];
@@ -127,37 +123,37 @@ NSLog( @"didEnterZones" );
 
 RCT_EXPORT_METHOD(getRoutePoints:(RCTResponseSenderBlock)callback)
 {
-    NSLog( @"getRoutePoints" );
+    if(DEBUG_LOG) NSLog( @"getRoutePoints" );
 
     NSMutableArray *pointsArray = [[NSMutableArray alloc] init];
     for (NSValue *point in routePathPoints) {
-        NSLog( @"NSValue: %@", point );
-        NSLog( @"NSValue.x: %f", [point CGPointValue].x );
+        if(DEBUG_LOG) NSLog( @"NSValue: %@", point );
+        if(DEBUG_LOG) NSLog( @"NSValue.x: %f", [point CGPointValue].x );
         [pointsArray addObject:[NSString stringWithFormat: @"{\"x\": %f, \"y\": %f}", [point CGPointValue].x * _zoomScale, [point CGPointValue].y * _zoomScale]];
 /*
         const CGFloat dstX = (_floorImageWidth / _zoomScale) * [point CGPointValue].x / _sublocation.dimensions.width;
         const CGFloat dstY = (_floorImageHeight / _zoomScale) * (1. - [point CGPointValue].y / _sublocation.dimensions.height);
         [pointsArray addObject:[NSString stringWithFormat: @"{\"x\": %f, \"y\": %f}", dstX, dstY]];
 */
-        NSLog( @"addObject: %@", @[[NSString stringWithFormat: @"{x: %f, y: %f}", [point CGPointValue].x, [point CGPointValue].y]] );
+        if(DEBUG_LOG) NSLog( @"addObject: %@", @[[NSString stringWithFormat: @"{x: %f, y: %f}", [point CGPointValue].x, [point CGPointValue].y]] );
     }
-    NSLog( @"pointsArray: %@", pointsArray );
+    if(DEBUG_LOG) NSLog( @"pointsArray: %@", pointsArray );
 
     NSString *pointsString = [NSString stringWithFormat: @"[%@]", [pointsArray componentsJoinedByString: @", "]];
-    NSLog( @"pointsString: %@", pointsString );
+    if(DEBUG_LOG) NSLog( @"pointsString: %@", pointsString );
 
     callback(@[pointsString]);
 }
 
 RCT_EXPORT_METHOD(setRouteDestination:(float)x yParameter:(float)y callback:(RCTResponseSenderBlock)callback)
 {
-    NSLog( @"setRouteDestination: x: %f, y: %f", x, y );
+    if(DEBUG_LOG) NSLog( @"setRouteDestination: x: %f, y: %f", x, y );
     CGPoint touchPtInM = [self convertPixelsToMeters: x:y withScale:1]; // Touch point in meters
     NCLocationPoint *targetPt = [NCLocationPoint pointWithLocation: _location.id
                                                        sublocation: _sublocation.id
                                                                  x: @(touchPtInM.x)
                                                                  y: @(touchPtInM.y)];
-    NSLog( @"NCLocationPoint: x: %f, y: %f", touchPtInM.x, touchPtInM.y );
+    if(DEBUG_LOG) NSLog( @"NCLocationPoint: x: %f, y: %f", touchPtInM.x, touchPtInM.y );
     [_navigineCore cancelTargets];
     [_navigineCore setTarget:targetPt];
     _isRouting = YES;
@@ -196,11 +192,11 @@ RCT_EXPORT_METHOD(sampleMethod:(NSString *)stringArgument numberParameter:(nonnu
   UIImage *floorImg = [UIImage imageWithData: _sublocation.sublocationImage.imageData];
   [_scrollView addSubview:_imageView];
 
-NSLog( @"setupFloor" );
+    if(DEBUG_LOG) NSLog( @"setupFloor" );
 
   const CGSize imgSize = floorImg.size;
 
-NSLog( @"imgSize_width: %f, imgSize_height: %f", imgSize.width, imgSize.height );
+    if(DEBUG_LOG) NSLog( @"imgSize_width: %f, imgSize_height: %f", imgSize.width, imgSize.height );
 
    _floorImageWidth = imgSize.width;
    _floorImageHeight = imgSize.height;
@@ -274,7 +270,6 @@ NCLocationPoint *targetPt = [NCLocationPoint pointWithLocation: _location.id
 
 // Draw route by long tap
 - (void) longTapOnMap:(UITapGestureRecognizer *)gesture {
-NSLog( @"longTapOnMap" );
   if (gesture.state != UIGestureRecognizerStateBegan) return;
 
   [[_imageView viewWithTag:1] removeFromSuperview]; // Remove destination pin from map
@@ -311,16 +306,16 @@ NSLog( @"longTapOnMap" );
 
 // Convert from meters to pixels
 - (CGPoint) convertMetersToPixels:(float)srcX :(float)srcY withScale :(float)scale {
-NSLog( @"_imageView.width: %f", _floorImageWidth);
-NSLog( @"_imageView.height: %f", _floorImageHeight);
-NSLog( @"_zoomScale: %f", _zoomScale);
+    if(DEBUG_LOG) NSLog( @"_imageView.width: %f", _floorImageWidth);
+    if(DEBUG_LOG) NSLog( @"_imageView.height: %f", _floorImageHeight);
+    if(DEBUG_LOG) NSLog( @"_zoomScale: %f", _zoomScale);
   const CGFloat dstX = (_floorImageWidth / scale) * srcX / _sublocation.dimensions.width;
   const CGFloat dstY = (_floorImageHeight / scale) * (1. - srcY / _sublocation.dimensions.height);
   return CGPointMake(dstX, dstY);
 }
 
 - (void) drawRouteWithPath: (NSArray *)path andDistance: (float)distance {
-NSLog( @"drawRouteWithPath" );
+    if(DEBUG_LOG) NSLog( @"drawRouteWithPath" );
   if (distance <= 3.) { // Check that we are close to the finish point of the route
     [self stopRoute];
   }
@@ -333,23 +328,23 @@ NSLog( @"drawRouteWithPath" );
     [routePathPoints removeAllObjects];
 
     for (NCLocationPoint *point in path) {
-NSLog( @"NCLocationPoint: %@", point);
+      if(DEBUG_LOG) NSLog( @"NCLocationPoint: %@", point);
       if (point.sublocation != _sublocation.id) // If path between different sublocations
       {
-        NSLog( @"path between different sublocations");
+        if(DEBUG_LOG) NSLog( @"path between different sublocations");
         continue;
       }
       else {
         CGPoint cgPoint = [self convertMetersToPixels:point.x.floatValue:point.y.floatValue withScale:_zoomScale];
-          NSLog( @"CGPoint: x: %f, y: %f", cgPoint.x, cgPoint.y);
+          if(DEBUG_LOG) NSLog( @"CGPoint: x: %f, y: %f", cgPoint.x, cgPoint.y);
           [routePathPoints addObject:[NSValue valueWithCGPoint:cgPoint]];
         if (_routePath.empty) {
           [_routePath moveToPoint:cgPoint];
-          NSLog( @"moveToPoint" );
+          if(DEBUG_LOG) NSLog( @"moveToPoint" );
         }
         else {
           [_routePath addLineToPoint:cgPoint];
-          NSLog( @"addLineToPoint" );
+          if(DEBUG_LOG) NSLog( @"addLineToPoint" );
         }
 
       }
@@ -451,10 +446,10 @@ NSLog( @"NCLocationPoint: %@", point);
 # pragma mark NavigineCoreDelegate methods
 
 - (void) navigineCore: (NavigineCore *)navigineCore didUpdateDeviceInfo: (NCDeviceInfo *)deviceInfo {
-NSLog( @"!!!!!!!!!!  didUpdateDeviceInfo  !!!!!!!!!!!!!" );
-NSLog(@"navError: %@", deviceInfo.error);
-NSLog( @"deviceInfo.x: %@", deviceInfo.x);
-NSLog( @"deviceInfo.y: %@", deviceInfo.y);
+    if(DEBUG_LOG) NSLog( @"!!!!!!!!!!  didUpdateDeviceInfo  !!!!!!!!!!!!!" );
+    if(DEBUG_LOG) NSLog(@"navError: %@", deviceInfo.error);
+    if(DEBUG_LOG) NSLog( @"deviceInfo.x: %@", deviceInfo.x);
+    if(DEBUG_LOG) NSLog( @"deviceInfo.y: %@", deviceInfo.y);
 
   NSError *navError = deviceInfo.error;
   if (navError == nil) {
@@ -464,9 +459,9 @@ NSLog( @"deviceInfo.y: %@", deviceInfo.y);
       const float radScale = _imageView.width / _sublocation.dimensions.width;
       _curPosition.center = [self convertMetersToPixels: [deviceInfo.x floatValue]: [deviceInfo.y floatValue] withScale: _zoomScale];
       _curPosition.radius = deviceInfo.r * radScale;
-NSLog( @"curPosition: %f, %f", _curPosition.center.x, _curPosition.center.y);
+        if(DEBUG_LOG) NSLog( @"curPosition: %f, %f", _curPosition.center.x, _curPosition.center.y);
       _azimuth = deviceInfo.azimuth;
-NSLog( @"azimuth: %f", deviceInfo.azimuth);
+        if(DEBUG_LOG) NSLog( @"azimuth: %f", deviceInfo.azimuth);
     }
   }
   else {
@@ -475,7 +470,7 @@ NSLog( @"azimuth: %f", deviceInfo.azimuth);
     _errorView.hidden = NO;
   }
   if (_isRouting) {
-NSLog( @"ROUTING: YES");
+    if(DEBUG_LOG) NSLog( @"ROUTING: YES");
     NCRoutePath *devicePath = deviceInfo.paths.firstObject;
     if (devicePath) {
       NCLocalPoint *lastPoint = devicePath.points.lastObject;
@@ -495,13 +490,13 @@ NSLog( @"ROUTING: YES");
 
 - (void)navigineCore:(NavigineCore *)navigineCore didEnterZone:(NCZone *)zone {
 
-NSLog(@"Enter zone: %@", zone);
+    if(DEBUG_LOG) NSLog(@"Enter zone: %@", zone);
 
     [zonesCollect addObject:zone];
 }
 
 - (void)navigineCore:(NavigineCore *)navigineCore didExitZone:(NCZone *)zone {
-  NSLog(@"Leave zone: %@", zone);
+  if(DEBUG_LOG) NSLog(@"Leave zone: %@", zone);
 }
 
 #pragma mark UIScrollViewDelegate methods
