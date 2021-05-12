@@ -84,6 +84,7 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       private RectF   mSelectedVenueRect = null;
       private Zone    mSelectedZone   = null;
 
+      private boolean DEBUG_LOG = false;
       private Callback       initCallback   = null;
 
       private ArrayList<Zone> zonesCollect = new ArrayList<Zone>();
@@ -146,10 +147,10 @@ public class NavigineModule extends ReactContextBaseJavaModule {
 
       initCallback = callback;
 
-      Log.d(TAG, "NavigineSDK.initialize | START");
+      if (DEBUG_LOG) Log.d(TAG, "NavigineSDK.initialize | START");
       if (NavigineSDK.initialize(mContext, "D536-A0D5-4BEE-25CE", "https://api.navigine.com"))
       {
-        Log.d(TAG, "NavigineSDK.initialize | OK");
+          if (DEBUG_LOG) Log.d(TAG, "NavigineSDK.initialize | OK");
 
         new Handler(Looper.getMainLooper()).post(new Runnable() {
                @Override
@@ -167,7 +168,7 @@ public class NavigineModule extends ReactContextBaseJavaModule {
                              drawDevice();
 
                              mNavigation = NavigineSDK.getNavigation();
-                             Log.d(TAG, "mNavigation = " + mNavigation.toString());
+                             if (DEBUG_LOG) Log.d(TAG, "mNavigation = " + mNavigation.toString());
 
                              loadMap();
 
@@ -202,11 +203,11 @@ public class NavigineModule extends ReactContextBaseJavaModule {
                             mPinPoint = new LocationPoint(mLocation.getId(), subLoc.getId(), P.x, P.y);
                             mTargetPoint  = mPinPoint;
                             mNavigation.setTarget(mTargetPoint);
- Log.d(TAG, "makePin");
+
                             makePin(P);
                             //cancelVenue();
 
-                             Log.d(TAG, "init() callback");
+                             if (DEBUG_LOG) Log.d(TAG, "init() callback");
                              initCallback.invoke("init()");
 
                            }
@@ -220,28 +221,28 @@ public class NavigineModule extends ReactContextBaseJavaModule {
                              Log.d(TAG, "Downloading location: " + progress + "%");
                            }
                          });
-                 Log.d(TAG, "NavigineSDK.loadLocationInBackground() isLoaded? = " + isLoaded);
+                         if (DEBUG_LOG) Log.d(TAG, "NavigineSDK.loadLocationInBackground() isLoaded? = " + isLoaded);
                }
         });
 
 
       }
 
-      Log.d(TAG, "init() END");
+      if (DEBUG_LOG) Log.d(TAG, "init() END");
     }
 
     @ReactMethod
     public void getLocationData(Callback callback) {
-      Log.d(TAG, "getLocationData()");
+      if (DEBUG_LOG) Log.d(TAG, "getLocationData()");
       callback.invoke("getLocationData()");
     }
 
     @ReactMethod
     public void getFloorImage(Callback callback) {
-      Log.d(TAG, "getFloorImage()");
+      if (DEBUG_LOG) Log.d(TAG, "getFloorImage()");
 
       SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
-      Log.d(TAG, "Image:" + subLoc.getImage());
+      if (DEBUG_LOG) Log.d(TAG, "Image:" + subLoc.getImage());
 
       String encodedFile = new String(Base64.getEncoder().encode(subLoc.getImage().getData()));
 
@@ -250,38 +251,38 @@ public class NavigineModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void getCurPosition(Callback callback) {
-      Log.d(TAG, "getCurPosition()");
+      if (DEBUG_LOG) Log.d(TAG, "getCurPosition()");
 
-      Log.d(TAG, "Cur x: " + mDeviceInfo.getX() + ", y: " + mDeviceInfo.getY());
+      if (DEBUG_LOG) Log.d(TAG, "Cur x: " + mDeviceInfo.getX() + ", y: " + mDeviceInfo.getY());
       SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
 
-      Log.d(TAG, "Location size: x: " + subLoc.getWidth() + ", y: " + subLoc.getHeight());
+      if (DEBUG_LOG) Log.d(TAG, "Location size: x: " + subLoc.getWidth() + ", y: " + subLoc.getHeight());
 
       callback.invoke(mDeviceInfo.getX() + "|" + (subLoc.getHeight() - mDeviceInfo.getY()));
     }
 
     @ReactMethod
     public void getAzimuth(Callback callback) {
-      Log.d(TAG, "getAzimuth()");
+      if (DEBUG_LOG) Log.d(TAG, "getAzimuth()");
 
-      Log.d(TAG, "getAzimuth: " + mDeviceInfo.getAzimuth());
+      if (DEBUG_LOG) Log.d(TAG, "getAzimuth: " + mDeviceInfo.getAzimuth());
 
       callback.invoke(mDeviceInfo.getAzimuth());
     }
 
     @ReactMethod
     public void getFloorImageSizes(Callback callback) {
-      Log.d(TAG, "getFloorImageSizes()");
+      if (DEBUG_LOG) Log.d(TAG, "getFloorImageSizes()");
 
       SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
-      Log.d(TAG, String.format(Locale.ENGLISH, "Loading sublocation %s (%.2f x %.2f)", subLoc.getName(), subLoc.getWidth(), subLoc.getHeight()));
+      if (DEBUG_LOG) Log.d(TAG, String.format(Locale.ENGLISH, "Loading sublocation %s (%.2f x %.2f)", subLoc.getName(), subLoc.getWidth(), subLoc.getHeight()));
 
       callback.invoke(subLoc.getWidth() + "|" + subLoc.getHeight());
     }
 
     @ReactMethod
     public void didEnterZones(Callback callback) {
-      Log.d(TAG, "didEnterZones()");
+      if (DEBUG_LOG) Log.d(TAG, "didEnterZones()");
 
       if (this.zonesCollect.size() < 1) {
         callback.invoke("");
@@ -289,7 +290,7 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       }
 
       for (Zone z : zonesCollect) {
-        Log.d(TAG, "ZONE: " + z.getName());
+        if (DEBUG_LOG) Log.d(TAG, "ZONE: " + z.getName());
       }
 
       Zone z = this.zonesCollect.get(this.zonesCollect.size() - 1);
@@ -298,12 +299,12 @@ public class NavigineModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void getRoutePoints(Callback callback) {
-      Log.d(TAG, "getRoutePoints()");
-Log.d(TAG, "PATHS COUNT: " + String.valueOf(mDeviceInfo.getPaths().size()));
+      if (DEBUG_LOG) Log.d(TAG, "getRoutePoints()");
+      if (DEBUG_LOG) Log.d(TAG, "PATHS COUNT: " + String.valueOf(mDeviceInfo.getPaths().size()));
       if (mDeviceInfo.getPaths() != null && mDeviceInfo.getPaths().size() > 0)
       {
         RoutePath path = mDeviceInfo.getPaths().get(0);
-        Log.d(TAG, "PATH SIZE: " + String.valueOf(path.getPoints().size()));
+        if (DEBUG_LOG) Log.d(TAG, "PATH SIZE: " + String.valueOf(path.getPoints().size()));
         if (path.getPoints().size() >= 2)
         {
           SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
@@ -313,7 +314,7 @@ Log.d(TAG, "PATHS COUNT: " + String.valueOf(mDeviceInfo.getPaths().size()));
           {
 
             LocationPoint Q = path.getPoints().get(j);
-Log.d(TAG, "Q.x = " + String.valueOf(Q.x));
+            if (DEBUG_LOG) Log.d(TAG, "Q.x = " + String.valueOf(Q.x));
 
               pointsArray.add("{\"x\": "+ String.valueOf(Q.x) + ", \"y\": " + String.valueOf(subLoc.getHeight() - Q.y) + "}");
             //  canvas.drawLine(P1.x, P1.y, Q1.x, Q1.y, paint);
@@ -343,20 +344,20 @@ Log.d(TAG, "Q.x = " + String.valueOf(Q.x));
 
     @ReactMethod
     public void setRouteDestination(float x, float y, Callback callback) {
-      Log.d(TAG, String.format(Locale.ENGLISH, "setRouteDestination: x:%.2f, y:%.2f)", x, y));
+      if (DEBUG_LOG) Log.d(TAG, String.format(Locale.ENGLISH, "setRouteDestination: x:%.2f, y:%.2f)", x, y));
 
       if (mLocation != null && mCurrentSubLocationIndex >= 0) {
         SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
         if (subLoc != null) {
           mPinPoint = new LocationPoint(mLocation.getId(), subLoc.getId(), x, subLoc.getHeight() - y);
-          Log.d(TAG, "mPinPoint");
+          if (DEBUG_LOG) Log.d(TAG, "mPinPoint");
           if (mPinPoint != null)
           {
               mTargetPoint  = mPinPoint;
               mTargetVenue  = null;
               mPinPoint     = null;
               mNavigation.setTarget(mTargetPoint);
-              Log.d(TAG, "setTarget");
+              if (DEBUG_LOG) Log.d(TAG, "setTarget");
               cancelPin();
           }
         }
@@ -368,7 +369,7 @@ Log.d(TAG, "Q.x = " + String.valueOf(Q.x));
 
     @ReactMethod
     public void getZoomScale(Callback callback) {
-      Log.d(TAG, "getZoomScale()");
+      if (DEBUG_LOG) Log.d(TAG, "getZoomScale()");
       callback.invoke("1");
     }
 
@@ -575,19 +576,19 @@ Log.d(TAG, "Q.x = " + String.valueOf(Q.x));
 
       private void handleDeviceUpdate(DeviceInfo deviceInfo)
       {
-        Log.d(TAG, "handleDeviceUpdate()");
+        if (DEBUG_LOG) Log.d(TAG, "handleDeviceUpdate()");
 
         mDeviceInfo = deviceInfo;
         if (mDeviceInfo == null)
           return;
 
-        Log.d(TAG, "mDeviceInfo not null");
+        if (DEBUG_LOG) Log.d(TAG, "mDeviceInfo not null");
 
         // Check if location is loaded
         if (mLocation == null || mCurrentSubLocationIndex < 0)
           return;
 
-        Log.d(TAG, "mLocation not null");
+        if (DEBUG_LOG) Log.d(TAG, "mLocation not null");
 
         if (mDeviceInfo.isValid() && mDeviceInfo.getPaths().size() != 0) {
           if (mDeviceInfo.getPaths().get(0).getEvents().size() >= 1)
@@ -595,13 +596,13 @@ Log.d(TAG, "Q.x = " + String.valueOf(Q.x));
         }
         else{
         //mDirectionLayout.setVisibility(GONE);
-          Log.d(TAG, "mDeviceInfo no valid");
+          if (DEBUG_LOG) Log.d(TAG, "mDeviceInfo no valid");
         }
 
-        Log.d(TAG, "TEST getSubLocationId(): " + mDeviceInfo.getSubLocationId());
-        Log.d(TAG, "TEST getX(): " + mDeviceInfo.getX());
-        Log.d(TAG, "TEST mDeviceInfo.getPaths(): " + mDeviceInfo.getPaths());
-        Log.d(TAG, "TEST getDeviceInfo(): " + mNavigation.getDeviceInfo().getY());
+        if (DEBUG_LOG) Log.d(TAG, "TEST getSubLocationId(): " + mDeviceInfo.getSubLocationId());
+        if (DEBUG_LOG) Log.d(TAG, "TEST getX(): " + mDeviceInfo.getX());
+        if (DEBUG_LOG) Log.d(TAG, "TEST mDeviceInfo.getPaths(): " + mDeviceInfo.getPaths());
+        if (DEBUG_LOG) Log.d(TAG, "TEST getDeviceInfo(): " + mNavigation.getDeviceInfo().getY());
 
 
         if (mDeviceInfo.isValid())
@@ -767,7 +768,7 @@ Log.d(TAG, "Q.x = " + String.valueOf(Q.x));
 
         mPinPoint = new LocationPoint(mLocation.getId(), subLoc.getId(), P.x, P.y);
         mPinPointRect = new RectF();
-        Log.d(TAG, "makePin <END>");
+        if (DEBUG_LOG) Log.d(TAG, "makePin <END>");
         //mLocationView.redraw();
       }
 
