@@ -9,13 +9,26 @@
 
 @implementation Navigine
 
+static NSString* API_KEY; // personal security key in the profile
+static NSString* API_SERVER = @"https://api.navigine.com"; // API server
+
 static NSMutableArray* zonesCollect;
 static NSMutableArray* routePathPoints;
 
 RCT_EXPORT_MODULE(Navigine)
 
-RCT_EXPORT_METHOD(init:(RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(setApiKey:(NSString *)apiKey callback:(RCTResponseSenderBlock)callback)
 {
+    NSLog( @"setApiKey: %@", apiKey );
+    API_KEY = apiKey;
+    callback(@"OK");
+}
+
+RCT_EXPORT_METHOD(init:(NSString *)apiKey locationId:(NSInteger)locationId callback:(RCTResponseSenderBlock)callback)
+{
+    API_KEY = apiKey;
+    _locationId = locationId;
+
     [self initCore];
 
         _curPosition = [[CurrentLocation alloc] init];
@@ -173,10 +186,10 @@ RCT_EXPORT_METHOD(sampleMethod:(NSString *)stringArgument numberParameter:(nonnu
 
 - (void) initCore {
     _floor = 0;
-    _locationId = 60019; // location id from web site
+    //_locationId = 60019; // location id from web site
     _zoomScale = 1;
-    NSString *userHash = @"D536-A0D5-4BEE-25CE"; // your personal security key in the profile
-    NSString *server = @"https://api.navigine.com"; // your API server
+    NSString *userHash = API_KEY; // your personal security key in the profile
+    NSString *server = API_SERVER; // your API server
     _navigineCore = [[NavigineCore alloc] initWithUserHash:userHash server:server];
     _navigineCore.delegate = self;
     _navigineCore.locationDelegate = self;

@@ -17,13 +17,22 @@ let locationDataPromise = new Promise((resolve, reject) => {
 });
 
 const NaviginePlugin = {
-    init: function (callback) {
-        Navigine.init(callback);
+    init: function (apiKey, locationId, callback) {
+        Navigine.init(apiKey, locationId, callback);
     },
 
-    // TODO
-    setApiKey: function (apiKey: string) {
-
+    /**
+     * Set Navigine API key (userHash)
+     * @param apiKey
+     */
+    setApiKey: async function (apiKey) {
+        let setApiKeyPromise = new Promise((resolve, reject) => {
+            Navigine.setApiKey(apiKey, function (data) {
+                resolve(data);
+            });
+        });
+        let response = await setApiKeyPromise;
+        return response;
     },
 
     // NOT IN USE
