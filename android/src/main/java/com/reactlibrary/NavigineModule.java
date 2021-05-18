@@ -85,6 +85,9 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       private Zone    mSelectedZone   = null;
 
       private boolean DEBUG_LOG = false;
+      private String API_KEY;
+      private String API_SERVER = "https://api.navigine.com"; // API server
+      private int LOCATION_ID;
       private Callback       initCallback   = null;
 
       private ArrayList<Zone> zonesCollect = new ArrayList<Zone>();
@@ -107,7 +110,10 @@ public class NavigineModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void init(Callback callback) {
+    public void init(String apiKey, int locationId, Callback callback) {
+        API_KEY = apiKey;
+        LOCATION_ID = locationId;
+
       final Activity activity = getCurrentActivity();
 
       // Setting up NavigineSDK parameters
@@ -148,14 +154,14 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       initCallback = callback;
 
       if (DEBUG_LOG) Log.d(TAG, "NavigineSDK.initialize | START");
-      if (NavigineSDK.initialize(mContext, "D536-A0D5-4BEE-25CE", "https://api.navigine.com"))
+      if (NavigineSDK.initialize(mContext, API_KEY, API_SERVER))
       {
           if (DEBUG_LOG) Log.d(TAG, "NavigineSDK.initialize | OK");
 
         new Handler(Looper.getMainLooper()).post(new Runnable() {
                @Override
                public void run() {
-                 boolean isLoaded = NavigineSDK.loadLocationInBackground(60019, 30,
+                 boolean isLoaded = NavigineSDK.loadLocationInBackground(LOCATION_ID, 30,
                          new Location.LoadListener()
                          {
                            @Override public void onFinished()
