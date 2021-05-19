@@ -132,6 +132,7 @@ RCT_EXPORT_METHOD(didEnterZones:(RCTResponseSenderBlock)callback)
     NCZone *zone = [zonesCollect lastObject];
 
     callback(@[[NSString stringWithFormat: @"%@", zone.name]]);
+    [zonesCollect removeAllObjects];
 }
 
 RCT_EXPORT_METHOD(getRoutePoints:(RCTResponseSenderBlock)callback)

@@ -300,7 +300,9 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       }
 
       Zone z = this.zonesCollect.get(this.zonesCollect.size() - 1);
+
       callback.invoke(z.getName());
+      this.zonesCollect.clear();
     }
 
     @ReactMethod

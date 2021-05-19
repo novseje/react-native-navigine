@@ -125,7 +125,6 @@ const NaviginePlugin = {
             });
         });
         let response = await didEnterZonesPromise;
-        console.log('didEnterZonesPromise: '+ response);
         if (response) {
             let name = response.toString();
             let zones = [{name: name}];
@@ -142,11 +141,8 @@ const NaviginePlugin = {
      */
     getLastZoneName: async function () {
         let zones = await this.didEnterZones();
-        console.log('getLastZoneName/zones: '+ zones);
         if (zones) {
             var last_element = zones[zones.length - 1];
-            console.log('getLastZoneName/last_element: '+ last_element);
-            console.log('getLastZoneName/last_element.name: '+ last_element.name);
             return last_element.name;
         } else {
             return false;
@@ -165,7 +161,6 @@ const NaviginePlugin = {
             });
         });
         let response = await getRoutePointsPromise;
-        console.log('getRoutePoints: '+ response);
         if (response) {
             let json = JSON.parse(response);
             if (json) {
@@ -185,7 +180,6 @@ const NaviginePlugin = {
      * @returns 'OK' if OK
      */
     setRouteDestination: async function (x, y) {
-        console.log('setRouteDestination: '+ x + ', ' + y);
         let setRouteDestinationPromise = new Promise((resolve, reject) => {
             Navigine.setRouteDestination(x, y, function (data) {
                 resolve(data);
