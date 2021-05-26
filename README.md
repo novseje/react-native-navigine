@@ -37,7 +37,8 @@ Declare a broadcast receiver and job scheduler service for scanning BLE devices 
 ```javascript
 import NaviginePlugin from 'react-native-navigine';
 
-NaviginePlugin.init(async (param) => {
+NaviginePlugin.init("XXXX-XXXX-XXXX-XXXX", 99999, async (param) => {
+    
     // Start work with Navigine
 
     let floorImage_base64 = await NaviginePlugin.getFloorImage();
@@ -46,18 +47,39 @@ NaviginePlugin.init(async (param) => {
 
     let floorImageScale = await NaviginePlugin.getZoomScale();
 
-    setInterval(this.curPositionUpdate, 2000);
+    setInterval(this.curPositionUpdate, 1500);
+
+    setInterval(this.didEnterZonesCheck, 2000);
+
+    setInterval(this.getRoutePoints, 2000);
 });
 
 curPositionUpdate = async () => {
     let curPosition = await NaviginePlugin.getCurPosition();
-    if (this.state.floorImageSizes.x > 0 && this.state.floorImageSizes.y > 0) {
-      let relPosition = {
-        x: curPosition.x / this.state.floorImageSizes.x,
-        y: curPosition.y / this.state.floorImageSizes.y,
-      }
-      this.setState({relPosition: relPosition});
-    }
 
+    let curAzimuth = await NaviginePlugin.getAzimuth();
   }
+
+didEnterZonesCheck = async () => {
+    let name = await NaviginePlugin.getLastZoneName();
+}
+
+/**
+ * Get array of (only first) route points
+ * point object format is {x: 0.0, y: 0.0}
+ * @returns array of all points [{x: 0.0, y: 0.0}]
+ */
+getRoutePoints = async () => {
+    let points = await NaviginePlugin.getRoutePoints();
+}
+
+/**
+ * Set destionation point to routing
+ * @param x floor position in pixels
+ * @param y floor position in pixels
+ * @returns 'OK' if OK
+ */
+setRouteDestination = async (x, y) => {
+    NaviginePlugin.setRouteDestination(x, y);
+}
 ```

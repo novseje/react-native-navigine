@@ -151,7 +151,7 @@ const NaviginePlugin = {
 
     /**
      * Get array of (only first) route points
-     * point object formai is {x: 0.0, y: 0.0}
+     * point object format is {x: 0.0, y: 0.0}
      * @returns array of all points [{x: 0.0, y: 0.0}]
      */
     getRoutePoints: async function () {
