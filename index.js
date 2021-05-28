@@ -10,12 +10,6 @@ let callbackFn = function (data) {
     alert(data);
 }
 
-let locationDataPromise = new Promise((resolve, reject) => {
-    Navigine.getLocationData((data) => {
-        resolve(data);
-    });
-});
-
 const NaviginePlugin = {
     init: function (apiKey, locationId, callback) {
         Navigine.init(apiKey, locationId, callback);
@@ -32,12 +26,6 @@ const NaviginePlugin = {
             });
         });
         let response = await setApiKeyPromise;
-        return response;
-    },
-
-    // NOT IN USE
-    getLocationData: async function () {
-        let response = await locationDataPromise;
         return response;
     },
 

@@ -19,7 +19,7 @@ RCT_EXPORT_MODULE(Navigine)
 
 RCT_EXPORT_METHOD(setApiKey:(NSString *)apiKey callback:(RCTResponseSenderBlock)callback)
 {
-    NSLog( @"setApiKey: %@", apiKey );
+    if(DEBUG_LOG) NSLog( @"setApiKey: %@", apiKey );
     API_KEY = apiKey;
     callback(@"OK");
 }
@@ -29,47 +29,33 @@ RCT_EXPORT_METHOD(init:(NSString *)apiKey locationId:(NSInteger)locationId callb
     API_KEY = apiKey;
     _locationId = locationId;
 
+    zonesCollect = [[NSMutableArray alloc] init];
+    routePathPoints = [[NSMutableArray alloc] init];
+
+    _curPosition = [[CurrentLocation alloc] init];
+    _curPosition.hidden = NO;
+
     [self initCore];
 
-        _curPosition = [[CurrentLocation alloc] init];
-        _curPosition.hidden = NO;
+    BOOL forced = YES;
+    // If YES, the content data would be loaded even if the same version has been downloaded already earlier.
+    // If NO, the download process compares the current downloaded version with the last version on the server.
+    // If server version equals to the current downloaded version, the re-downloading is not done.
+    if(DEBUG_LOG) NSLog( @"Before navigineCore" );
+    [_navigineCore downloadLocationById:_locationId forceReload:forced
+        processBlock:^(NSInteger loadProcess) {
+            if(DEBUG_LOG) NSLog( @"processBlock" );
+        } successBlock:^(NSDictionary *userInfo) {
+            if(DEBUG_LOG) NSLog( @"successBlock" );
 
-        BOOL forced = YES;
-        // If YES, the content data would be loaded even if the same version has been downloaded already earlier.
-        // If NO, the download process compares the current downloaded version with the last version on the server.
-        // If server version equals to the current downloaded version, the re-downloading is not done.
-        if(DEBUG_LOG) NSLog( @"Before navigineCore" );
-        [_navigineCore downloadLocationById:_locationId forceReload:forced
-            processBlock:^(NSInteger loadProcess) {
-                if(DEBUG_LOG) NSLog( @"processBlock" );
-                if(DEBUG_LOG) NSLog(@"%zd",loadProcess);
-            } successBlock:^(NSDictionary *userInfo) {
-                if(DEBUG_LOG) NSLog( @"successBlock" );
-                if(DEBUG_LOG) NSLog( @"%@", self->_navigineCore.location.name );
+            [self->_navigineCore startNavigine];
+            [self setupFloor: self.floor];
 
-                [self->_navigineCore startNavigine];
-                [self setupFloor: self.floor];
-
-                //NSLog( @"curPosition: %@", _curPosition );
-
-                callback(@[[NSString stringWithFormat: @"numberArgument: %ld stringArgument: %@", (long)_navigineCore.location.id, _navigineCore.location.name]]);
-            } failBlock:^(NSError *error) {
-                if(DEBUG_LOG) NSLog( @"failBlock" );
-                NSLog(@"%@",error);
-            }];
-
-         zonesCollect = [[NSMutableArray alloc] init];
-         routePathPoints = [[NSMutableArray alloc] init];
-
-        if(DEBUG_LOG) NSLog( @"end of initNav" );
-}
-
-RCT_EXPORT_METHOD(getLocationData: (RCTResponseSenderBlock)callback)
-{
-    NSString *someString = @"0000-1111-2222-3333";
-    //callback(@[[NSString stringWithFormat: @"stringArgument: %@",someString]]);
-    callback(@[[NSString stringWithFormat: @"ID:%@",someString]]);
-    NSLog( @"%@", someString );
+            callback(@[[NSString stringWithFormat: @"numberArgument: %ld stringArgument: %@", (long)_navigineCore.location.id, _navigineCore.location.name]]);
+        } failBlock:^(NSError *error) {
+            if(DEBUG_LOG) NSLog( @"failBlock" );
+            NSLog(@"%@",error);
+        }];
 }
 
 RCT_EXPORT_METHOD(getFloorImage: (RCTResponseSenderBlock)callback)
@@ -189,6 +175,8 @@ RCT_EXPORT_METHOD(sampleMethod:(NSString *)stringArgument numberParameter:(nonnu
     _floor = 0;
     //_locationId = 60019; // location id from web site
     _zoomScale = 1;
+
+    // Initialize navigation core
     NSString *userHash = API_KEY; // your personal security key in the profile
     NSString *server = API_SERVER; // your API server
     _navigineCore = [[NavigineCore alloc] initWithUserHash:userHash server:server];
