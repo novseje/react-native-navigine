@@ -160,12 +160,6 @@ RCT_EXPORT_METHOD(setRouteDestination:(float)x yParameter:(float)y callback:(RCT
     callback(@[[NSString stringWithFormat: @"OK"]]);
 }
 
-RCT_EXPORT_METHOD(sampleMethod:(NSString *)stringArgument numberParameter:(nonnull NSNumber *)numberArgument callback:(RCTResponseSenderBlock)callback)
-{
-    // TODO: Implement some actually useful functionality
-    callback(@[[NSString stringWithFormat: @"numberArgument: %@ stringArgument: %@", numberArgument, stringArgument]]);
-}
-
 - (dispatch_queue_t)methodQueue
 {
     return dispatch_get_main_queue();

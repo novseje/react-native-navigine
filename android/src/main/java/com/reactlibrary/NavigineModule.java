@@ -104,12 +104,6 @@ public class NavigineModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void sampleMethod(String stringArgument, int numberArgument, Callback callback) {
-        // TODO: Implement some actually useful functionality
-        callback.invoke("Received numberArgument: " + numberArgument + " stringArgument: " + stringArgument);
-    }
-
-    @ReactMethod
     public void init(String apiKey, int locationId, Callback callback) {
         API_KEY = apiKey;
         LOCATION_ID = locationId;
@@ -235,12 +229,6 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       }
 
       if (DEBUG_LOG) Log.d(TAG, "init() END");
-    }
-
-    @ReactMethod
-    public void getLocationData(Callback callback) {
-      if (DEBUG_LOG) Log.d(TAG, "getLocationData()");
-      callback.invoke("getLocationData()");
     }
 
     @ReactMethod
@@ -380,64 +368,6 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       if (DEBUG_LOG) Log.d(TAG, "getZoomScale()");
       callback.invoke("1");
     }
-
-      protected void RENAMEDonCreate(Bundle savedInstanceState)
-      {
-         /*
-              drawZones(canvas);
-              drawPoints(canvas);
-              drawVenues(canvas);
-              drawDevice(canvas);
-         */
-
-        mNavigation = NavigineSDK.getNavigation();
-
-        loadMap();
-
-        // Setting up device listener
-        if (mNavigation != null)
-        {
-          mNavigation.setDeviceListener
-          (
-            new DeviceInfo.Listener()
-            {
-              @Override public void onUpdate(DeviceInfo info) { handleDeviceUpdate(info); }
-            }
-          );
-        }
-
-        // Setting up zone listener
-        if (mNavigation != null)
-        {
-          mNavigation.setZoneListener
-          (
-            new Zone.Listener()
-            {
-              @Override public void onEnterZone(Zone z) { handleEnterZone(z); }
-              @Override public void onLeaveZone(Zone z) { handleLeaveZone(z); }
-            }
-          );
-        }
-      }
-
-      public void RENAMEDonDestroy()
-      {
-        if (mNavigation != null)
-        {
-          NavigineSDK.finish();
-          mNavigation = null;
-        }
-      }
-
-      public void onBackPressed()
-      {
-
-      }
-
-      public void toggleAdjustMode(View v)
-      {
-
-      }
 
       public void onNextFloor(View v)
       {
