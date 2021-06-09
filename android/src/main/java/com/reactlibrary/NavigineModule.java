@@ -197,16 +197,6 @@ public class NavigineModule extends ReactContextBaseJavaModule {
                                );
                              }
 
-                            Log.d(TAG, "SET ROUTING");
-                            PointF P = new PointF(35.0f, 16.0f);
-                            SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
-                            mPinPoint = new LocationPoint(mLocation.getId(), subLoc.getId(), P.x, P.y);
-                            mTargetPoint  = mPinPoint;
-                            mNavigation.setTarget(mTargetPoint);
-
-                            makePin(P);
-                            //cancelVenue();
-
                              if (DEBUG_LOG) Log.d(TAG, "init() callback");
                              initCallback.invoke("init()");
 

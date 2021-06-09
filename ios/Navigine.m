@@ -183,46 +183,34 @@ RCT_EXPORT_METHOD(setRouteDestination:(float)x yParameter:(float)y callback:(RCT
 - (void) setupFloor:(NSInteger) floor {
 //  [self removeVenuesFromMap]; // Remove venues from map
 //  [self removeZonesFromMap];  // Remove zones from map
-  _location = _navigineCore.location;
-  _sublocation = _navigineCore.location.sublocations[_floor];
-  UIImage *floorImg = [UIImage imageWithData: _sublocation.sublocationImage.imageData];
-  [_scrollView addSubview:_imageView];
+    _location = _navigineCore.location;
+    _sublocation = _navigineCore.location.sublocations[_floor];
+    UIImage *floorImg = [UIImage imageWithData: _sublocation.sublocationImage.imageData];
+    [_scrollView addSubview:_imageView];
 
     if(DEBUG_LOG) NSLog( @"setupFloor" );
 
-  const CGSize imgSize = floorImg.size;
+    const CGSize imgSize = floorImg.size;
 
     if(DEBUG_LOG) NSLog( @"imgSize_width: %f, imgSize_height: %f", imgSize.width, imgSize.height );
 
    _floorImageWidth = imgSize.width;
    _floorImageHeight = imgSize.height;
 
-  const CGSize viewSize = CGSizeMake(400, 400);
-  float scale = 1.f;
-  if ((imgSize.width / imgSize.height) > (viewSize.width / viewSize.height))
-    scale = viewSize.height / imgSize.height;
-  else
-    scale = imgSize.width / imgSize.width;
+    const CGSize viewSize = CGSizeMake(400, 400);
+    float scale = 1.f;
+    if ((imgSize.width / imgSize.height) > (viewSize.width / viewSize.height))
+        scale = viewSize.height / imgSize.height;
+    else
+        scale = imgSize.width / imgSize.width;
 
-   _floorViewWidth = imgSize.width * scale;
-   _floorViewHeight = imgSize.height * scale;
-   _zoomScale = scale;
+    _floorViewWidth = imgSize.width * scale;
+    _floorViewHeight = imgSize.height * scale;
+    _zoomScale = scale;
 //  _scrollView.contentSize = CGSizeMake(imgSize.width * scale, imgSize.height * scale);
 
 //  [self drawZones];
 //  [self drawVenues];
-
-
-
-NCLocationPoint *targetPt = [NCLocationPoint pointWithLocation: _location.id
-                                                     sublocation: _sublocation.id
-                                                               x: @(35)
-                                                               y: @(12)];
-  [_navigineCore cancelTargets];
-  [_navigineCore setTarget:targetPt];
-  _isRouting = YES;
-
-
 }
 
 #pragma mark Handlers
