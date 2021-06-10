@@ -186,7 +186,6 @@ RCT_EXPORT_METHOD(setRouteDestination:(float)x yParameter:(float)y callback:(RCT
     _location = _navigineCore.location;
     _sublocation = _navigineCore.location.sublocations[_floor];
     UIImage *floorImg = [UIImage imageWithData: _sublocation.sublocationImage.imageData];
-    [_scrollView addSubview:_imageView];
 
     if(DEBUG_LOG) NSLog( @"setupFloor" );
 
@@ -290,9 +289,6 @@ RCT_EXPORT_METHOD(setRouteDestination:(float)x yParameter:(float)y callback:(RCT
 
 // Convert from meters to pixels
 - (CGPoint) convertMetersToPixels:(float)srcX :(float)srcY withScale :(float)scale {
-    if(DEBUG_LOG) NSLog( @"_imageView.width: %f", _floorImageWidth);
-    if(DEBUG_LOG) NSLog( @"_imageView.height: %f", _floorImageHeight);
-    if(DEBUG_LOG) NSLog( @"_zoomScale: %f", _zoomScale);
   const CGFloat dstX = (_floorImageWidth / scale) * srcX / _sublocation.dimensions.width;
   const CGFloat dstY = (_floorImageHeight / scale) * (1. - srcY / _sublocation.dimensions.height);
   return CGPointMake(dstX, dstY);
@@ -304,9 +300,7 @@ RCT_EXPORT_METHOD(setRouteDestination:(float)x yParameter:(float)y callback:(RCT
     [self stopRoute];
   }
   else {
-    [_routeLayer removeFromSuperlayer];
     [_routePath removeAllPoints];
-    _routeLayer = [CAShapeLayer layer];
     _routePath = [[UIBezierPath alloc] init];
 
     [routePathPoints removeAllObjects];
@@ -334,24 +328,13 @@ RCT_EXPORT_METHOD(setRouteDestination:(float)x yParameter:(float)y callback:(RCT
       }
     }
   }
-  _routeLayer.hidden = NO;
-  _routeLayer.path = _routePath.CGPath;
-  _routeLayer.strokeColor = kColorFromHex(0x4AADD4).CGColor;
-  _routeLayer.lineWidth = 2.0;
-  _routeLayer.lineJoin = kCALineJoinRound;
-  _routeLayer.fillColor = UIColor.clearColor.CGColor;
-
-  [_imageView.layer addSublayer: _routeLayer]; // Add route layer on map
-  [_imageView bringSubviewToFront: _curPosition];
 }
 
 - (void) stopRoute {
   [[_imageView viewWithTag:1] removeFromSuperview]; // Remove current pin from map
-  [_routeLayer removeFromSuperlayer];
   [_routePath removeAllPoints];
   [_navigineCore cancelTargets];
   _isRouting = NO;
-  _eventView.hidden = YES;
 }
 
 - (void) drawVenues {
@@ -423,6 +406,7 @@ RCT_EXPORT_METHOD(setRouteDestination:(float)x yParameter:(float)y callback:(RCT
   return hexStr;
 }
 
+// Converting Objective-C object to a string
 - (NSString *)encodeToBase64String:(UIImage *)image {
  return [UIImagePNGRepresentation(image) base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
 }
@@ -437,12 +421,11 @@ RCT_EXPORT_METHOD(setRouteDestination:(float)x yParameter:(float)y callback:(RCT
 
   NSError *navError = deviceInfo.error;
   if (navError == nil) {
-    _errorView.hidden = YES;
     _curPosition.hidden = deviceInfo.sublocation != _sublocation.id; // Hide current position pin
     if(!_curPosition.hidden) {
-      const float radScale = _imageView.width / _sublocation.dimensions.width;
+      //const float radScale = _imageView.width / _sublocation.dimensions.width;
       _curPosition.center = [self convertMetersToPixels: [deviceInfo.x floatValue]: [deviceInfo.y floatValue] withScale: _zoomScale];
-      _curPosition.radius = deviceInfo.r * radScale;
+      //_curPosition.radius = deviceInfo.r * radScale;
         if(DEBUG_LOG) NSLog( @"curPosition: %f, %f", _curPosition.center.x, _curPosition.center.y);
       _azimuth = deviceInfo.azimuth;
         if(DEBUG_LOG) NSLog( @"azimuth: %f", deviceInfo.azimuth);
@@ -450,23 +433,15 @@ RCT_EXPORT_METHOD(setRouteDestination:(float)x yParameter:(float)y callback:(RCT
   }
   else {
     _curPosition.hidden = YES;
-    _errorView.error = navError;
-    _errorView.hidden = NO;
   }
   if (_isRouting) {
     if(DEBUG_LOG) NSLog( @"ROUTING: YES");
     NCRoutePath *devicePath = deviceInfo.paths.firstObject;
     if (devicePath) {
       NCLocalPoint *lastPoint = devicePath.points.lastObject;
-      [_imageView viewWithTag:1].hidden = lastPoint.sublocation != _sublocation.id; // Hide destination pin
-      _eventView.hidden = deviceInfo.sublocation != _sublocation.id; // Hide event bar
       NSArray *path = devicePath.points;
       NSArray *eventsArr = devicePath.events;
       float distance = devicePath.lenght;
-      if(distance < 1)
-        [_eventView setFinishTitle];
-      else
-        _eventView.event = eventsArr.firstObject;
       [self drawRouteWithPath:path andDistance:distance];
     }
   }
