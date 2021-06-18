@@ -14,7 +14,7 @@ let callbackFn = function (data) {
 
 const NaviginePlugin = {
     init: function (apiKey, locationId, callback) {
-        if (DEBUG_LOG) Log.d(TAG, "[Navigine] init()");
+        if (DEBUG_LOG) console.log("[Navigine] init()");
 
         Navigine.init(apiKey, locationId, callback);
     },
@@ -24,7 +24,7 @@ const NaviginePlugin = {
      * @param apiKey
      */
     setApiKey: async function (apiKey) {
-        if (DEBUG_LOG) Log.d(TAG, "[Navigine] setApiKey()");
+        if (DEBUG_LOG) console.log("[Navigine] setApiKey()");
 
         let setApiKeyPromise = new Promise((resolve, reject) => {
             Navigine.setApiKey(apiKey, function (data) {
@@ -40,7 +40,7 @@ const NaviginePlugin = {
      * @returns {String} Image data in Base64
      */
     getFloorImage: async function () {
-        if (DEBUG_LOG) Log.d(TAG, "[Navigine] getFloorImage()");
+        if (DEBUG_LOG) console.log("[Navigine] getFloorImage()");
 
         let getFloorImagePromise = new Promise((resolve, reject) => {
             Navigine.getFloorImage(function (data) {
@@ -56,7 +56,7 @@ const NaviginePlugin = {
      * @returns {Object} Positin in floor {x: 0.0, y: 0.0} in pixels
      */
     getCurPosition: async function () {
-        if (DEBUG_LOG) Log.d(TAG, "[Navigine] getCurPosition()");
+        if (DEBUG_LOG) console.log("[Navigine] getCurPosition()");
 
         let getCurPositionPromise = new Promise((resolve, reject) => {
             Navigine.getCurPosition(function (data) {
@@ -73,7 +73,7 @@ const NaviginePlugin = {
      * @returns Azimuth value in radians
      */
     getAzimuth: async function () {
-        if (DEBUG_LOG) Log.d(TAG, "[Navigine] getAzimuth()");
+        if (DEBUG_LOG) console.log("[Navigine] getAzimuth()");
 
         let getAzimuthPromise = new Promise((resolve, reject) => {
             Navigine.getAzimuth(function (data) {
@@ -90,7 +90,7 @@ const NaviginePlugin = {
      * @returns {Object} Image size {x: 0, y: 0}
      */
     getFloorImageSizes: async function () {
-        if (DEBUG_LOG) Log.d(TAG, "[Navigine] getFloorImageSizes()");
+        if (DEBUG_LOG) console.log("[Navigine] getFloorImageSizes()");
 
         let getFloorImageSizesPromise = new Promise((resolve, reject) => {
             Navigine.getFloorImageSizes(function (data) {
@@ -107,7 +107,7 @@ const NaviginePlugin = {
      * @returns {float} scale
      */
     getZoomScale: async function () {
-        if (DEBUG_LOG) Log.d(TAG, "[Navigine] getZoomScale()");
+        if (DEBUG_LOG) console.log("[Navigine] getZoomScale()");
 
         let getZoomScalePromise = new Promise((resolve, reject) => {
             Navigine.getZoomScale(function (data) {
@@ -123,7 +123,7 @@ const NaviginePlugin = {
      * @returns array of zones [{name: 'ZONE_NAME'}]
      */
     didEnterZones: async function () {
-        if (DEBUG_LOG) Log.d(TAG, "[Navigine] didEnterZones()");
+        if (DEBUG_LOG) console.log("[Navigine] didEnterZones()");
 
         let didEnterZonesPromise = new Promise((resolve, reject) => {
             Navigine.didEnterZones(function (data) {
@@ -146,7 +146,7 @@ const NaviginePlugin = {
      * @returns {String} zone name
      */
     getLastZoneName: async function () {
-        if (DEBUG_LOG) Log.d(TAG, "[Navigine] getLastZoneName()");
+        if (DEBUG_LOG) console.log("[Navigine] getLastZoneName()");
 
         let zones = await this.didEnterZones();
         if (zones) {
@@ -163,7 +163,7 @@ const NaviginePlugin = {
      * @returns array of all points [{x: 0.0, y: 0.0}]
      */
     getRoutePoints: async function () {
-        if (DEBUG_LOG) Log.d(TAG, "[Navigine] getRoutePoints()");
+        if (DEBUG_LOG) console.log("[Navigine] getRoutePoints()");
 
         let getRoutePointsPromise = new Promise((resolve, reject) => {
             Navigine.getRoutePoints(function (data) {
@@ -190,7 +190,7 @@ const NaviginePlugin = {
      * @returns 'OK' if OK
      */
     setRouteDestination: async function (x, y) {
-        if (DEBUG_LOG) Log.d(TAG, "[Navigine] setRouteDestination()");
+        if (DEBUG_LOG) console.log("[Navigine] setRouteDestination()");
 
         let setRouteDestinationPromise = new Promise((resolve, reject) => {
             Navigine.setRouteDestination(x, y, function (data) {
