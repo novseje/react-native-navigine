@@ -5,7 +5,7 @@
 #import "RouteEventView/RouteEventView.h"
 #import "ErrorView/ErrorView.h"
 
-#define DEBUG_LOG NO
+#define DEBUG_LOG YES
 
 @implementation Navigine
 
@@ -19,13 +19,14 @@ RCT_EXPORT_MODULE(Navigine)
 
 RCT_EXPORT_METHOD(setApiKey:(NSString *)apiKey callback:(RCTResponseSenderBlock)callback)
 {
-    if(DEBUG_LOG) NSLog( @"setApiKey: %@", apiKey );
+    if(DEBUG_LOG) NSLog( @"[CALL] setApiKey: %@", apiKey );
     API_KEY = apiKey;
     callback(@"OK");
 }
 
 RCT_EXPORT_METHOD(init:(NSString *)apiKey locationId:(NSInteger)locationId callback:(RCTResponseSenderBlock)callback)
 {
+    if(DEBUG_LOG) NSLog( @"[CALL] init: locationId=%d", locationId );
     API_KEY = apiKey;
     _locationId = locationId;
 
@@ -41,26 +42,26 @@ RCT_EXPORT_METHOD(init:(NSString *)apiKey locationId:(NSInteger)locationId callb
     // If YES, the content data would be loaded even if the same version has been downloaded already earlier.
     // If NO, the download process compares the current downloaded version with the last version on the server.
     // If server version equals to the current downloaded version, the re-downloading is not done.
-    if(DEBUG_LOG) NSLog( @"Before navigineCore" );
+
     [_navigineCore downloadLocationById:_locationId forceReload:forced
         processBlock:^(NSInteger loadProcess) {
-            if(DEBUG_LOG) NSLog( @"processBlock" );
+            if(DEBUG_LOG) NSLog( @"[CALL] processBlock" );
         } successBlock:^(NSDictionary *userInfo) {
-            if(DEBUG_LOG) NSLog( @"successBlock" );
+            if(DEBUG_LOG) NSLog( @"[CALL] successBlock" );
 
             [self->_navigineCore startNavigine];
             [self setupFloor: self.floor];
 
             callback(@[[NSString stringWithFormat: @"numberArgument: %ld stringArgument: %@", (long)_navigineCore.location.id, _navigineCore.location.name]]);
         } failBlock:^(NSError *error) {
-            if(DEBUG_LOG) NSLog( @"failBlock" );
+            if(DEBUG_LOG) NSLog( @"[CALL] failBlock" );
             NSLog(@"%@",error);
         }];
 }
 
 RCT_EXPORT_METHOD(getFloorImage: (RCTResponseSenderBlock)callback)
 {
-    if(DEBUG_LOG) NSLog( @"getFloorImage" );
+    if(DEBUG_LOG) NSLog( @"[CALL] getFloorImage" );
 
     _location = _navigineCore.location;
     _sublocation = _navigineCore.location.sublocations[_floor];
@@ -71,14 +72,14 @@ RCT_EXPORT_METHOD(getFloorImage: (RCTResponseSenderBlock)callback)
 
 RCT_EXPORT_METHOD(getAzimuth: (RCTResponseSenderBlock)callback)
 {
-    if(DEBUG_LOG) NSLog( @"getAzimuth: %f", _azimuth);
+    if(DEBUG_LOG) NSLog( @"[CALL] getAzimuth: azimuth=%f", _azimuth);
 
     callback(@[[NSString stringWithFormat: @"%f", _azimuth]]);
 }
 
 RCT_EXPORT_METHOD(getCurPosition: (RCTResponseSenderBlock)callback)
 {
-    if(DEBUG_LOG) NSLog( @"getCurPosition" );
+    if(DEBUG_LOG) NSLog( @"[CALL] getCurPosition" );
     if(DEBUG_LOG) NSLog( @"curPosition: %f, %f, zoom: %f", _curPosition.center.x, _curPosition.center.y, _zoomScale);
 
     callback(@[[NSString stringWithFormat: @"%f|%f", _curPosition.center.x * _zoomScale, _curPosition.center.y * _zoomScale]]);
@@ -86,7 +87,7 @@ RCT_EXPORT_METHOD(getCurPosition: (RCTResponseSenderBlock)callback)
 
 RCT_EXPORT_METHOD(getFloorImageSizes: (RCTResponseSenderBlock)callback)
 {
-    if(DEBUG_LOG) NSLog( @"getFloorImageSizes" );
+    if(DEBUG_LOG) NSLog( @"[CALL] getFloorImageSizes" );
     if(DEBUG_LOG) NSLog( @"floorImageSizes: %f|%f", _floorImageWidth, _floorImageHeight);
 
     callback(@[[NSString stringWithFormat: @"%f|%f", _floorImageWidth, _floorImageHeight]]);
@@ -94,7 +95,7 @@ RCT_EXPORT_METHOD(getFloorImageSizes: (RCTResponseSenderBlock)callback)
 
 RCT_EXPORT_METHOD(getZoomScale: (RCTResponseSenderBlock)callback)
 {
-    if(DEBUG_LOG) NSLog( @"getZoomScale" );
+    if(DEBUG_LOG) NSLog( @"[CALL] getZoomScale" );
     if(DEBUG_LOG) NSLog( @"zoomScale: %f", _zoomScale);
 
     callback(@[[NSString stringWithFormat: @"%f", _zoomScale]]);
@@ -102,7 +103,7 @@ RCT_EXPORT_METHOD(getZoomScale: (RCTResponseSenderBlock)callback)
 
 RCT_EXPORT_METHOD(didEnterZones:(RCTResponseSenderBlock)callback)
 {
-    if(DEBUG_LOG) NSLog( @"didEnterZones" );
+    if(DEBUG_LOG) NSLog( @"[CALL] didEnterZones" );
 
     if ([zonesCollect count] < 1) {
         callback(@[[NSString stringWithFormat: @""]]);
@@ -123,7 +124,7 @@ RCT_EXPORT_METHOD(didEnterZones:(RCTResponseSenderBlock)callback)
 
 RCT_EXPORT_METHOD(getRoutePoints:(RCTResponseSenderBlock)callback)
 {
-    if(DEBUG_LOG) NSLog( @"getRoutePoints" );
+    if(DEBUG_LOG) NSLog( @"[CALL] getRoutePoints" );
 
     NSMutableArray *pointsArray = [[NSMutableArray alloc] init];
     for (NSValue *point in routePathPoints) {
@@ -147,7 +148,7 @@ RCT_EXPORT_METHOD(getRoutePoints:(RCTResponseSenderBlock)callback)
 
 RCT_EXPORT_METHOD(setRouteDestination:(float)x yParameter:(float)y callback:(RCTResponseSenderBlock)callback)
 {
-    if(DEBUG_LOG) NSLog( @"setRouteDestination: x: %f, y: %f", x, y );
+    if(DEBUG_LOG) NSLog( @"[CALL] setRouteDestination: x: %f, y: %f", x, y );
     CGPoint touchPtInM = [self convertPixelsToMeters: x:y withScale:1]; // Touch point in meters
     NCLocationPoint *targetPt = [NCLocationPoint pointWithLocation: _location.id
                                                        sublocation: _sublocation.id
@@ -166,6 +167,8 @@ RCT_EXPORT_METHOD(setRouteDestination:(float)x yParameter:(float)y callback:(RCT
 }
 
 - (void) initCore {
+    if(DEBUG_LOG) NSLog( @"[CALL] initCore");
+
     _floor = 0;
     //_locationId = 60019; // location id from web site
     _zoomScale = 1;
@@ -181,13 +184,13 @@ RCT_EXPORT_METHOD(setRouteDestination:(float)x yParameter:(float)y callback:(RCT
 }
 
 - (void) setupFloor:(NSInteger) floor {
+    if(DEBUG_LOG) NSLog( @"[CALL] setupFloor");
+
 //  [self removeVenuesFromMap]; // Remove venues from map
 //  [self removeZonesFromMap];  // Remove zones from map
     _location = _navigineCore.location;
     _sublocation = _navigineCore.location.sublocations[_floor];
     UIImage *floorImg = [UIImage imageWithData: _sublocation.sublocationImage.imageData];
-
-    if(DEBUG_LOG) NSLog( @"setupFloor" );
 
     const CGSize imgSize = floorImg.size;
 
@@ -295,7 +298,8 @@ RCT_EXPORT_METHOD(setRouteDestination:(float)x yParameter:(float)y callback:(RCT
 }
 
 - (void) drawRouteWithPath: (NSArray *)path andDistance: (float)distance {
-    if(DEBUG_LOG) NSLog( @"drawRouteWithPath" );
+    if(DEBUG_LOG) NSLog( @"[CALL] drawRouteWithPath");
+
   if (distance <= 3.) { // Check that we are close to the finish point of the route
     [self stopRoute];
   }
@@ -331,6 +335,8 @@ RCT_EXPORT_METHOD(setRouteDestination:(float)x yParameter:(float)y callback:(RCT
 }
 
 - (void) stopRoute {
+    if(DEBUG_LOG) NSLog( @"[CALL] stopRoute");
+
   [[_imageView viewWithTag:1] removeFromSuperview]; // Remove current pin from map
   [_routePath removeAllPoints];
   [_navigineCore cancelTargets];
@@ -414,10 +420,7 @@ RCT_EXPORT_METHOD(setRouteDestination:(float)x yParameter:(float)y callback:(RCT
 # pragma mark NavigineCoreDelegate methods
 
 - (void) navigineCore: (NavigineCore *)navigineCore didUpdateDeviceInfo: (NCDeviceInfo *)deviceInfo {
-    if(DEBUG_LOG) NSLog( @"!!!!!!!!!!  didUpdateDeviceInfo  !!!!!!!!!!!!!" );
-    if(DEBUG_LOG) NSLog(@"navError: %@", deviceInfo.error);
-    if(DEBUG_LOG) NSLog( @"deviceInfo.x: %@", deviceInfo.x);
-    if(DEBUG_LOG) NSLog( @"deviceInfo.y: %@", deviceInfo.y);
+    if(DEBUG_LOG) NSLog( @"[CALL] didUpdateDeviceInfo");
 
   NSError *navError = deviceInfo.error;
   if (navError == nil) {
@@ -448,6 +451,7 @@ RCT_EXPORT_METHOD(setRouteDestination:(float)x yParameter:(float)y callback:(RCT
 }
 
 - (void)navigineCore:(NavigineCore *)navigineCore didEnterZone:(NCZone *)zone {
+    if(DEBUG_LOG) NSLog( @"[CALL] didEnterZone");
 
     if(DEBUG_LOG) NSLog(@"Enter zone: %@", zone);
 
@@ -455,7 +459,9 @@ RCT_EXPORT_METHOD(setRouteDestination:(float)x yParameter:(float)y callback:(RCT
 }
 
 - (void)navigineCore:(NavigineCore *)navigineCore didExitZone:(NCZone *)zone {
-  if(DEBUG_LOG) NSLog(@"Leave zone: %@", zone);
+    if(DEBUG_LOG) NSLog( @"[CALL] didExitZone");
+
+    if(DEBUG_LOG) NSLog(@"Leave zone: %@", zone);
 }
 
 #pragma mark UIScrollViewDelegate methods

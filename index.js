@@ -2,6 +2,8 @@ import { NativeModules } from 'react-native';
 
 const { Navigine } = NativeModules;
 
+const DEBUG_LOG = true;
+
 if (!Navigine) {
     throw new Error('Navigine module: NativeModule is null');
 }
@@ -12,6 +14,8 @@ let callbackFn = function (data) {
 
 const NaviginePlugin = {
     init: function (apiKey, locationId, callback) {
+        if (DEBUG_LOG) Log.d(TAG, "[Navigine] init()");
+
         Navigine.init(apiKey, locationId, callback);
     },
 
@@ -20,6 +24,8 @@ const NaviginePlugin = {
      * @param apiKey
      */
     setApiKey: async function (apiKey) {
+        if (DEBUG_LOG) Log.d(TAG, "[Navigine] setApiKey()");
+
         let setApiKeyPromise = new Promise((resolve, reject) => {
             Navigine.setApiKey(apiKey, function (data) {
                 resolve(data);
@@ -34,6 +40,8 @@ const NaviginePlugin = {
      * @returns {String} Image data in Base64
      */
     getFloorImage: async function () {
+        if (DEBUG_LOG) Log.d(TAG, "[Navigine] getFloorImage()");
+
         let getFloorImagePromise = new Promise((resolve, reject) => {
             Navigine.getFloorImage(function (data) {
                 resolve(data);
@@ -48,6 +56,8 @@ const NaviginePlugin = {
      * @returns {Object} Positin in floor {x: 0.0, y: 0.0} in pixels
      */
     getCurPosition: async function () {
+        if (DEBUG_LOG) Log.d(TAG, "[Navigine] getCurPosition()");
+
         let getCurPositionPromise = new Promise((resolve, reject) => {
             Navigine.getCurPosition(function (data) {
                 resolve(data);
@@ -63,6 +73,8 @@ const NaviginePlugin = {
      * @returns Azimuth value in radians
      */
     getAzimuth: async function () {
+        if (DEBUG_LOG) Log.d(TAG, "[Navigine] getAzimuth()");
+
         let getAzimuthPromise = new Promise((resolve, reject) => {
             Navigine.getAzimuth(function (data) {
                 resolve(data);
@@ -78,6 +90,8 @@ const NaviginePlugin = {
      * @returns {Object} Image size {x: 0, y: 0}
      */
     getFloorImageSizes: async function () {
+        if (DEBUG_LOG) Log.d(TAG, "[Navigine] getFloorImageSizes()");
+
         let getFloorImageSizesPromise = new Promise((resolve, reject) => {
             Navigine.getFloorImageSizes(function (data) {
                 resolve(data);
@@ -93,6 +107,8 @@ const NaviginePlugin = {
      * @returns {float} scale
      */
     getZoomScale: async function () {
+        if (DEBUG_LOG) Log.d(TAG, "[Navigine] getZoomScale()");
+
         let getZoomScalePromise = new Promise((resolve, reject) => {
             Navigine.getZoomScale(function (data) {
                 resolve(data);
@@ -107,6 +123,8 @@ const NaviginePlugin = {
      * @returns array of zones [{name: 'ZONE_NAME'}]
      */
     didEnterZones: async function () {
+        if (DEBUG_LOG) Log.d(TAG, "[Navigine] didEnterZones()");
+
         let didEnterZonesPromise = new Promise((resolve, reject) => {
             Navigine.didEnterZones(function (data) {
                 resolve(data);
@@ -128,6 +146,8 @@ const NaviginePlugin = {
      * @returns {String} zone name
      */
     getLastZoneName: async function () {
+        if (DEBUG_LOG) Log.d(TAG, "[Navigine] getLastZoneName()");
+
         let zones = await this.didEnterZones();
         if (zones) {
             var last_element = zones[zones.length - 1];
@@ -143,6 +163,8 @@ const NaviginePlugin = {
      * @returns array of all points [{x: 0.0, y: 0.0}]
      */
     getRoutePoints: async function () {
+        if (DEBUG_LOG) Log.d(TAG, "[Navigine] getRoutePoints()");
+
         let getRoutePointsPromise = new Promise((resolve, reject) => {
             Navigine.getRoutePoints(function (data) {
                 resolve(data);
@@ -168,6 +190,8 @@ const NaviginePlugin = {
      * @returns 'OK' if OK
      */
     setRouteDestination: async function (x, y) {
+        if (DEBUG_LOG) Log.d(TAG, "[Navigine] setRouteDestination()");
+
         let setRouteDestinationPromise = new Promise((resolve, reject) => {
             Navigine.setRouteDestination(x, y, function (data) {
                 resolve(data);
