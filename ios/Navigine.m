@@ -111,14 +111,16 @@ RCT_EXPORT_METHOD(didEnterZones:(RCTResponseSenderBlock)callback)
     }
 
     // loop through every element (dynamic typing)
-    for (NCZone *zone in zonesCollect) {
+    /*for (NCZone *zone in zonesCollect) {
         if(DEBUG_LOG) NSLog(@"Single element: %@", zone);
         if(DEBUG_LOG) NSLog(@"Zone name: %@", zone.name);
-    }
+    }*/
 
     NCZone *zone = [zonesCollect lastObject];
 
-    callback(@[[NSString stringWithFormat: @"%@", zone.name]]);
+    if (zone) {
+        callback(@[[NSString stringWithFormat: @"%@", zone.name]]);
+    }
     [zonesCollect removeAllObjects];
 }
 
