@@ -1,4 +1,9 @@
-package com.reactlibrary;
+package com.reactnativenavigine;
+
+import androidx.annotation.NonNull;
+
+import com.facebook.react.bridge.Promise;
+import com.facebook.react.module.annotations.ReactModule;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -32,8 +37,10 @@ import com.navigine.naviginesdk.*;
 
 import java.util.ArrayList;
 
-
+@ReactModule(name = NavigineModule.NAME)
 public class NavigineModule extends ReactContextBaseJavaModule {
+  public static final String NAME = "Navigine";
+
   private final ReactApplicationContext mContext;
 
       private static final String   TAG                     = "NAVIGINE.Demo";
@@ -99,6 +106,7 @@ public class NavigineModule extends ReactContextBaseJavaModule {
     }
 
     @Override
+    @NonNull
     public String getName() {
         return "Navigine";
     }

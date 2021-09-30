@@ -2,7 +2,7 @@
 
 ## Getting started
 
-`$ npm install react-native-navigine --save`
+`$ npm install github:novseje/react-native-navigine`
 
 ### Install for iOS
 
@@ -14,6 +14,7 @@ Note: After every "pod install" command, you need to set this checkbox again.
 
 ### Install for Android
 Declare a broadcast receiver and job scheduler service for scanning BLE devices in Android versions >= 26.
+Add this code to file android/app/src/main/AndroidManifest.xml
 ```xml
 <application>
   ...
