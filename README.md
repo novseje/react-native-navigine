@@ -1,6 +1,8 @@
 # react-native-navigine
 
-## Getting started
+React Native module for Navigine indoor positioning system
+
+## Installation
 
 `$ npm install github:novseje/react-native-navigine`
 
@@ -34,8 +36,20 @@ Add this code to file android/app/src/main/AndroidManifest.xml
 </application>
 ```
 
+And set permissions:
+```
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+```
+
 ## Usage
-```javascript
+```js
 import NaviginePlugin from 'react-native-navigine';
 
 NaviginePlugin.init("XXXX-XXXX-XXXX-XXXX", 99999, async (param) => {

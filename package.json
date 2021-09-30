@@ -1,69 +1,147 @@
 {
-  "_args": [
-    [
-      "github:novseje/react-native-navigine",
-      "/Users/admin/Documents/mobileApps/IndoorDemo"
-    ]
-  ],
-  "_from": "github:novseje/react-native-navigine",
-  "_id": "react-native-navigine@github:novseje/react-native-navigine#c72a4357cc7b4ccca5f446a7ac5e7c36ae578d22",
-  "_inBundle": false,
-  "_integrity": "",
-  "_location": "/react-native-navigine",
-  "_phantomChildren": {},
-  "_requested": {
-    "type": "git",
-    "raw": "github:novseje/react-native-navigine",
-    "rawSpec": "github:novseje/react-native-navigine",
-    "saveSpec": "github:novseje/react-native-navigine",
-    "fetchSpec": null,
-    "gitCommittish": null
-  },
-  "_requiredBy": [
-    "/"
-  ],
-  "_resolved": "github:novseje/react-native-navigine#c72a4357cc7b4ccca5f446a7ac5e7c36ae578d22",
-  "_spec": "github:novseje/react-native-navigine",
-  "_where": "/Users/admin/Documents/mobileApps/IndoorDemo",
-  "author": {
-    "name": "Your Name",
-    "email": "yourname@email.com"
-  },
-  "bugs": {
-    "url": "https://github.com/github_account/react-native-navigine/issues"
-  },
-  "description": "TODO",
-  "devDependencies": {
-    "react": "^16.9.0",
-    "react-native": "^0.61.5"
-  },
-  "files": [
-    "README.md",
-    "android",
-    "index.js",
-    "ios",
-    "react-native-navigine.podspec"
-  ],
-  "homepage": "https://github.com/github_account/react-native-navigine#readme",
-  "keywords": [
-    "react-native"
-  ],
-  "license": "MIT",
-  "licenseFilename": "LICENSE",
-  "main": "index.js",
   "name": "react-native-navigine",
-  "peerDependencies": {
-    "react": "^16.8.1",
-    "react-native": ">=0.60.0-rc.0 <1.0.x"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/github_account/react-native-navigine.git",
-    "baseUrl": "https://github.com/github_account/react-native-navigine"
-  },
+  "version": "1.1.0",
+  "description": "React Native module for Navigine indoor positioning system",
+  "main": "lib/commonjs/index",
+  "module": "lib/module/index",
+  "types": "lib/typescript/index.d.ts",
+  "react-native": "src/index",
+  "source": "src/index",
+  "files": [
+    "src",
+    "lib",
+    "android",
+    "ios",
+    "cpp",
+    "react-native-navigine.podspec",
+    "!lib/typescript/example",
+    "!android/build",
+    "!ios/build",
+    "!**/__tests__",
+    "!**/__fixtures__",
+    "!**/__mocks__"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "typescript": "tsc --noEmit",
+    "lint": "eslint \"**/*.{js,ts,tsx}\"",
+    "prepare": "bob build",
+    "release": "release-it",
+    "example": "yarn --cwd example",
+    "pods": "cd example && pod-install --quiet",
+    "bootstrap": "yarn example && yarn && yarn pods"
   },
-  "title": "React Native Navigine",
-  "version": "1.0.0"
+  "keywords": [
+    "react-native",
+    "ios",
+    "android"
+  ],
+  "repository": "https://github.com/novseje/react-native-navigine",
+  "author": "Novseje <novseje@gmail.com> (https://github.com/novseje)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/novseje/react-native-navigine/issues"
+  },
+  "homepage": "https://github.com/novseje/react-native-navigine#readme",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "devDependencies": {
+    "@commitlint/config-conventional": "^11.0.0",
+    "@react-native-community/eslint-config": "^2.0.0",
+    "@release-it/conventional-changelog": "^2.0.0",
+    "@types/jest": "^26.0.0",
+    "@types/react": "^16.9.19",
+    "@types/react-native": "0.62.13",
+    "commitlint": "^11.0.0",
+    "eslint": "^7.2.0",
+    "eslint-config-prettier": "^7.0.0",
+    "eslint-plugin-prettier": "^3.1.3",
+    "husky": "^6.0.0",
+    "jest": "^26.0.1",
+    "pod-install": "^0.1.0",
+    "prettier": "^2.0.5",
+    "react": "16.13.1",
+    "react-native": "0.63.4",
+    "react-native-builder-bob": "^0.18.2",
+    "release-it": "^14.2.2",
+    "typescript": "^4.1.3"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*"
+  },
+  "jest": {
+    "preset": "react-native",
+    "modulePathIgnorePatterns": [
+      "<rootDir>/example/node_modules",
+      "<rootDir>/lib/"
+    ]
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "release-it": {
+    "git": {
+      "commitMessage": "chore: release ${version}",
+      "tagName": "v${version}"
+    },
+    "npm": {
+      "publish": true
+    },
+    "github": {
+      "release": true
+    },
+    "plugins": {
+      "@release-it/conventional-changelog": {
+        "preset": "angular"
+      }
+    }
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": [
+      "@react-native-community",
+      "prettier"
+    ],
+    "rules": {
+      "prettier/prettier": [
+        "error",
+        {
+          "quoteProps": "consistent",
+          "singleQuote": true,
+          "tabWidth": 2,
+          "trailingComma": "es5",
+          "useTabs": false
+        }
+      ]
+    }
+  },
+  "eslintIgnore": [
+    "node_modules/",
+    "lib/"
+  ],
+  "prettier": {
+    "quoteProps": "consistent",
+    "singleQuote": true,
+    "tabWidth": 2,
+    "trailingComma": "es5",
+    "useTabs": false
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "lib",
+    "targets": [
+      "commonjs",
+      "module",
+      [
+        "typescript",
+        {
+          "project": "tsconfig.build.json"
+        }
+      ]
+    ]
+  }
 }
