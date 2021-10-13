@@ -1,6 +1,5 @@
 #import "Navigine.h"
 
-#import "MapPin/MapPin.h"
 #import "CurrentLocation/CurrentLocation.h"
 #import "RouteEventView/RouteEventView.h"
 #import "ErrorView/ErrorView.h"
@@ -234,55 +233,6 @@ RCT_EXPORT_METHOD(setRouteDestination:(float)x yParameter:(float)y callback:(RCT
     [self setupFloor: --_floor];
 }
 
-- (void) mapPinTap:(MapPin*)pinBtn {
-  if(pinBtn.isSelected)
-    pinBtn.selected = NO;
-  else {
-    _pressedPin.popUp.hidden = YES; // Hide last selected pin
-    _pressedPin = pinBtn;
-    pinBtn.popUp.hidden = NO; // Show currently selected pin
-    pinBtn.popUp.centerX = pinBtn.centerX;
-    pinBtn.selected = YES;
-    [pinBtn resizeMapPinWithZoom: _scrollView.zoomScale];
-    [_imageView addSubview: pinBtn.popUp];
-  }
-}
-
-// Hide selected pin by tap anywhere
-- (void) singleTapOnMap:(UITapGestureRecognizer *)gesture {
-  if(_pressedPin.isSelected)
-    _pressedPin.popUp.hidden = YES;
-  else
-    return;
-}
-
-// Draw route by long tap
-- (void) longTapOnMap:(UITapGestureRecognizer *)gesture {
-  if (gesture.state != UIGestureRecognizerStateBegan) return;
-
-  [[_imageView viewWithTag:1] removeFromSuperview]; // Remove destination pin from map
-  CGPoint touchPtInPx = [gesture locationOfTouch:0 inView: _scrollView]; // Touch point in pixels
-  CGPoint touchPtInM = [self convertPixelsToMeters:touchPtInPx.x: touchPtInPx.y withScale:1]; // Touch point in meters
-  NCLocationPoint *targetPt = [NCLocationPoint pointWithLocation: _location.id
-                                                     sublocation: _sublocation.id
-                                                               x: @(touchPtInM.x)
-                                                               y: @(touchPtInM.y)];
-  [_navigineCore cancelTargets];
-  [_navigineCore setTarget:targetPt];
-
-  // Create destination pin on map
-  UIImage *imgMarker = [UIImage imageNamed:@"elmMapPin"];
-  UIImageView *destinationMarker = [[UIImageView alloc] initWithImage:imgMarker];
-  destinationMarker.tag = 1;
-  destinationMarker.transform = CGAffineTransformMakeScale(1. / _scrollView.zoomScale,
-                                                           1. / _scrollView.zoomScale);
-  destinationMarker.centerX = touchPtInPx.x / _scrollView.zoomScale;
-  destinationMarker.centerY = (touchPtInPx.y - imgMarker.size.height / 2.) / _scrollView.zoomScale;
-  destinationMarker.layer.zPosition = 5.;
-  [_imageView addSubview:destinationMarker];
-  _isRouting = YES;
-}
-
 #pragma mark Helper functions
 
 // Convert from pixels to meters
@@ -343,67 +293,6 @@ RCT_EXPORT_METHOD(setRouteDestination:(float)x yParameter:(float)y callback:(RCT
   [_routePath removeAllPoints];
   [_navigineCore cancelTargets];
   _isRouting = NO;
-}
-
-- (void) drawVenues {
-  for (NCVenue *curVenue in _sublocation.venues) {
-    MapPin *mapPin = [[MapPin alloc] initWithVenue:curVenue];
-    const CGFloat xPt = curVenue.x.floatValue;
-    const CGFloat yPt = curVenue.y.floatValue;
-    CGPoint venCentre = [self convertMetersToPixels:xPt :yPt withScale: 1];
-    [mapPin addTarget:self action:@selector(mapPinTap:) forControlEvents:UIControlEventTouchUpInside];
-    [mapPin sizeToFit];
-    mapPin.center = venCentre;
-    [_imageView addSubview:mapPin];
-    [_scrollView bringSubviewToFront:mapPin];
-  }
-}
-
-- (void) drawZones {
-  for (NCZone *zone in _sublocation.zones) {
-    UIBezierPath *zonePath  = [[UIBezierPath alloc] init];
-    CAShapeLayer *zoneLayer = [CAShapeLayer layer];
-    CGPoint firstPoint = CGPointMake(0, 0);
-    for(NCLocationPoint *point in zone.points) {
-      const float xPt = point.x.floatValue;
-      const float yPt = point.y.floatValue;
-      CGPoint cgCurPoint = [self convertMetersToPixels:xPt :yPt withScale:1];
-      if(zonePath.empty) {
-        firstPoint = cgCurPoint;
-        [zonePath moveToPoint:cgCurPoint];
-      }
-      else {
-        [zonePath addLineToPoint:cgCurPoint];
-      }
-    }
-    [zonePath addLineToPoint:firstPoint]; // Add first point again to close path
-    uint hexColor = [self stringToHex: zone.color]; // Parse zone color
-    zoneLayer.name            = @"Zone";
-    zoneLayer.path            = [zonePath CGPath];
-    zoneLayer.strokeColor     = [kColorFromHex(hexColor) CGColor];
-    zoneLayer.lineWidth       = 2.;
-    zoneLayer.lineJoin        = kCALineJoinRound;
-    zoneLayer.fillColor       = [[kColorFromHex(hexColor) colorWithAlphaComponent: .5] CGColor];
-    [_imageView.layer addSublayer:zoneLayer];
-  }
-}
-
-- (void) removeVenuesFromMap {
-  for (UIView *obj in _imageView.subviews) {
-    if ([obj isKindOfClass:[MapPin class]]) {
-      const MapPin *pin = ((MapPin *)obj);
-      [pin removeFromSuperview];
-      [pin.popUp removeFromSuperview];
-    }
-  }
-}
-
-- (void) removeZonesFromMap {
-  for (CALayer *layer in _imageView.layer.sublayers.copy) {
-    if ([[layer name] isEqualToString:@"Zone"]) {
-      [layer removeFromSuperlayer];
-    }
-  }
 }
 
 - (uint) stringToHex: (NSString *) srcStr {
@@ -470,32 +359,6 @@ RCT_EXPORT_METHOD(setRouteDestination:(float)x yParameter:(float)y callback:(RCT
 
 - (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView {
   return _imageView;
-}
-
-- (void) scrollViewDidZoom:(UIScrollView *)scrollView {
-  const float currentZoom = _scrollView.zoomScale;
-  if(currentZoom < _scrollView.minimumZoomScale || currentZoom > _scrollView.maximumZoomScale)
-    return;
-  else {
-    // Stay pins at same sizes while zooming
-    for (UIView *obj in self.imageView.subviews) {
-      if ([obj isKindOfClass:[MapPin class]]) {
-        const MapPin *pin = ((MapPin *)obj);
-        [pin resizeMapPinWithZoom:currentZoom];
-      }
-    }
-    [_curPosition resizeLocationPinWithZoom:currentZoom]; // Stay current position pin at same sizes while zooming
-    // Stay destination marker pin at same sizes while zooming
-    UIImageView *destMarker = [_imageView viewWithTag: 1];
-    destMarker.transform = CGAffineTransformMakeScale(1. / currentZoom, 1. / currentZoom);
-    destMarker.centerX = _routePath.currentPoint.x;
-    destMarker.centerY = _routePath.currentPoint.y - (destMarker.image.size.height / 2) / currentZoom;
-  }
-  // Another way to resize pins accordingly zoom
-  /* CGAffineTransform transform = _imageView.transform; // Get current matrix
-   CGAffineTransform invertedTransform = CGAffineTransformInvert(transform); // Inverse matrix
-   _pressedPin.transform = invertedTransform; // Apply transformation to button
-   _pressedPin.popUp.transform = invertedTransform; // Apply transformation to popup */
 }
 
 #pragma mark NavigineCoreDelegate methods

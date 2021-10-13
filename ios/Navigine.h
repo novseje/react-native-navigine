@@ -2,10 +2,9 @@
 #import <React/RCTViewManager.h>
 #import <React/RCTView.h>
 #import <Navigine/Navigine.h>
-#import "MapPin/MapPin.h"
 #import "CurrentLocation/CurrentLocation.h"
 
-@class ErrorView, RouteEventView, CurrentLocation, MapPin;
+@class ErrorView, RouteEventView, CurrentLocation;
 
 @interface Navigine : NSObject
 <
@@ -20,7 +19,6 @@ NavigineCoreBluetoothDelegate
 
 @property (weak, nonatomic) IBOutlet UILabel *lblCurrentFloor;
 @property (weak, nonatomic) IBOutlet UIStackView *btnStackFloor;
-@property (nonatomic, strong) MapPin *pressedPin; // Selected venue
 @property (nonatomic, strong) CurrentLocation *curPosition;
 
 @property (nonatomic, assign) int floor; // Selected sublocation
