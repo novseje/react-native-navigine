@@ -8,6 +8,20 @@ React Native module for Navigine indoor positioning system
 
 ### Install for iOS
 
+Edit your `Podfile` and add `pod 'Navigine'` to your target:
+
+```ruby
+target 'TargetName' do
+pod 'Navigine'
+end
+```
+
+Then, run the following command:
+
+```bash
+$ pod install
+```
+
 Join NavigineFramework to node module in XCode.
 
 ![alt text](/extra/add-framework.png?raw=true "Xcode")
