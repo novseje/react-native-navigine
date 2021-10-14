@@ -29,6 +29,12 @@ Join NavigineFramework to node module in XCode.
 Note: After every "pod install" command, you need to set this checkbox again.
 
 ### Install for Android
+
+Download `libnavigine.aar` file from Navigine repositories libs folder.
+https://github.com/Navigine/Indoor-Navigation-Android-Mobile-SDK-2.0
+
+Put this file in android/libs directory.
+
 Declare a broadcast receiver and job scheduler service for scanning BLE devices in Android versions >= 26.
 Add this code to file android/app/src/main/AndroidManifest.xml
 ```xml
@@ -52,14 +58,17 @@ Add this code to file android/app/src/main/AndroidManifest.xml
 
 And set permissions:
 ```
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+      <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+      <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+      <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+      <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+      <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+      <uses-permission android:name="android.permission.BLUETOOTH"/>
+      <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+      <uses-permission android:name="android.permission.INTERNET"/>
+      <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+      <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+      <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 ```
 
 ## Usage
