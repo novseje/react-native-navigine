@@ -1,4 +1,4 @@
-package com.navigine.navigine.demo;
+package com.reactnativenavigine;
 
 import android.content.Context;
 import android.os.Bundle;

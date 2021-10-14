@@ -1,4 +1,4 @@
-package com.navigine.navigine.demo;
+package com.reactnativenavigine;
 
 import android.animation.ObjectAnimator;
 import android.content.Context;
@@ -38,6 +38,7 @@ public class CircularProgressBar extends View
 
     private void init(Context context, AttributeSet attrs)
     {
+        /*
         TypedArray typedArray = context.getTheme().obtainStyledAttributes(attrs,
                 R.styleable.CircularProgressBar,
                 0, 0);
@@ -50,6 +51,7 @@ public class CircularProgressBar extends View
         } finally {
             typedArray.recycle();
         }
+        */
 
         mPaint.setColor(mColor);
         mPaint.setStyle(Paint.Style.STROKE);

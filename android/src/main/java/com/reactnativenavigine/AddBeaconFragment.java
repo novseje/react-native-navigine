@@ -1,4 +1,4 @@
-package com.navigine.navigine.demo;
+package com.reactnativenavigine;
 
 import android.os.Bundle;
 
@@ -13,7 +13,7 @@ import com.navigine.idl.java.LocationEditListener;
 import com.navigine.idl.java.LocationListener;
 import com.navigine.idl.java.Point;
 
-import static com.navigine.navigine.demo.NavigineApp.LocationManager;
+import static com.reactnativenavigine.NavigineApp.LocationManager;
 
 public class AddBeaconFragment extends Fragment {
 

@@ -1,4 +1,4 @@
-package com.navigine.navigine.demo;
+package com.reactnativenavigine;
 
 import android.app.AlarmManager;
 import android.app.Notification;

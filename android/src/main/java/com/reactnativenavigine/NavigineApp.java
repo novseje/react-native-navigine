@@ -1,4 +1,4 @@
-package com.navigine.navigine.demo;
+package com.reactnativenavigine;
 
 import android.annotation.SuppressLint;
 import android.app.Application;

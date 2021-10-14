@@ -1,4 +1,4 @@
-package com.navigine.navigine.demo;
+package com.reactnativenavigine;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -53,25 +53,7 @@ public class MainActivity extends AppCompatActivity {
 //                mMeasuringFragment = new MeasuringFragment();
 //                mFragmentManager.beginTransaction().add(R.id.main__frame_layout, mMeasuringFragment, "Measuring").hide(mMeasuringFragment).commitAllowingStateLoss();
 //            }
-            switch (menuItem.getItemId())
-            {
-                case R.id.navigation__menu_locations:
-                    mFragmentManager.beginTransaction().hide(mLastActive).show(mLocationsFragment).commitAllowingStateLoss();
-                    mLastActive = mLocationsFragment;
-                    return true;
-                case R.id.navigation__menu_navigation:
-                    mFragmentManager.beginTransaction().hide(mLastActive).show(mNavigationFragment).commitAllowingStateLoss();
-                    mLastActive = mNavigationFragment;
-                    return true;
-                case R.id.navigation__menu_debug:
-                    mFragmentManager.beginTransaction().hide(mLastActive).show(mDebugFragment).commitAllowingStateLoss();
-                    mLastActive = mDebugFragment;
-                    return true;
-                case R.id.navigation__menu_profile:
-                    mFragmentManager.beginTransaction().hide(mLastActive).show(mProfileFragment).commitAllowingStateLoss();
-                    mLastActive = mProfileFragment;
-                    return true;
-            }
+
             return false;
         });
     }
