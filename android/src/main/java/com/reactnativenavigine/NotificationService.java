@@ -42,7 +42,7 @@ public class NotificationService extends Service {
                 PendingIntent.FLAG_UPDATE_CURRENT);
 
         notificationBuilder.setOngoing(true)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                //.setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle("Navigine service")
                 .setContentText("Navigine service")
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
