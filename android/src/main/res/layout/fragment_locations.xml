@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="#F3F3F3">
 
-    <com.navigine.navigine.demo.CustomEditText
+    <com.reactnativenavigine.CustomEditText
         android:id="@+id/locations_fragment__search_field"
         android:layout_width="match_parent"
         android:layout_height="36dp"
@@ -29,7 +29,7 @@
         android:textColor="@color/colorPrimaryDark"/>
 
 
-    <com.navigine.navigine.demo.ListView
+    <com.reactnativenavigine.ListView
         android:id="@+id/locations_fragment__list_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
