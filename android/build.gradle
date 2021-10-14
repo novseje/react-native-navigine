@@ -76,6 +76,8 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
     implementation 'androidx.lifecycle:lifecycle-process:2.3.1'
 
-    // Download and put file in android/libs directory
-    implementation(name:'libnavigine', ext:'aar')
+
+    // Download `libnavigine` lib directory from Navigine repositories folder.
+    // Put this directory in `android` directory in your project directory.
+    implementation project(":libnavigine")
 }

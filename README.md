@@ -30,10 +30,15 @@ Note: After every "pod install" command, you need to set this checkbox again.
 
 ### Install for Android
 
-Download `libnavigine.aar` file from Navigine repositories libs folder.
+Download `libnavigine` lib directory from Navigine repositories folder.
 https://github.com/Navigine/Indoor-Navigation-Android-Mobile-SDK-2.0
 
-Put this file in android/libs directory.
+Put this directory in `android` directory in your project directory.
+
+Add code in android/settings.gradle file:
+```
+include ':libnavigine'
+```
 
 Declare a broadcast receiver and job scheduler service for scanning BLE devices in Android versions >= 26.
 Add this code to file android/app/src/main/AndroidManifest.xml
