@@ -111,7 +111,7 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       private Bitmap  mVenueBitmap    = null;
       private RectF   mSelectedVenueRect = null;
 
-      private boolean DEBUG_LOG = false;
+      private boolean DEBUG_LOG = true;
       private String API_KEY;
       private String API_SERVER = "https://api.navigine.com"; // API server
       private int LOCATION_ID;
@@ -138,20 +138,18 @@ public class NavigineModule extends ReactContextBaseJavaModule {
 
       final Activity activity = getCurrentActivity();
 
-      if (NavigineApp.mNavigineSdk == null)
-      {
-        return;
-      }
-
-      NavigineApp.UserHash = apiKey;
-      NavigineApp.Settings.edit();
+      verifyBluetooth();
 
       initNavigineSDK();
+
+      NavigineApp.UserHash = apiKey;
+      NavigineApp.initializeSdk();
 
       mCurrentSubLocationIndex = 0;
 
       ActivityCompat.requestPermissions(activity, new String[] { Manifest.permission.ACCESS_FINE_LOCATION,
               Manifest.permission.ACCESS_COARSE_LOCATION,
+              Manifest.permission.ACCESS_BACKGROUND_LOCATION,
               Manifest.permission.READ_EXTERNAL_STORAGE,
               Manifest.permission.WRITE_EXTERNAL_STORAGE}, 101);
 
@@ -232,10 +230,23 @@ public class NavigineModule extends ReactContextBaseJavaModule {
         NavigineApp.createInstance(this.mContext.getApplicationContext());
         Intent i = new Intent(this.mContext.getApplicationContext(), com.reactnativenavigine.NotificationService.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Log.d("NavigineSDK", "startForegroundService()>>");
           this.mContext.getApplicationContext().startForegroundService(i);
         } else {
+            Log.d("NavigineSDK", "startService()>>");
           this.mContext.getApplicationContext().startService(i);
         }
       }
+
+    private void verifyBluetooth() {
+        try {
+            if (!((BluetoothManager) this.mContext.getSystemService("bluetooth")).getAdapter().isEnabled()) {
+                Log.d("NavigineSDK", "NO BLUETOOTH");
+            }
+        }
+        catch (RuntimeException e) {
+            Log.d("NavigineSDK", "BLUETOOTH ERROR" + e.getMessage());
+        }
+    }
 
 }

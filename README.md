@@ -40,24 +40,29 @@ Add code in android/settings.gradle file:
 include ':libnavigine'
 ```
 
+Add code in android/app/build.gradle file:
+```
+android {
+    ...
+    packagingOptions {
+        pickFirst '**/*.so'
+    }
+}
+```
+
 Declare a broadcast receiver and job scheduler service for scanning BLE devices in Android versions >= 26.
 Add this code to file android/app/src/main/AndroidManifest.xml
 ```xml
 <application>
   ...
-    <service android:name="com.navigine.naviginesdk.NavigineJobService"
-        android:permission="android.permission.BIND_JOB_SERVICE"
-        android:exported="false"
-        android:enabled="true"/>
-
-    <receiver android:name="com.navigine.naviginesdk.BLEBroadcastReceiver"
+    <service
+        android:name="com.reactnativenavigine.NotificationService"
+        android:process=":remote"
         android:enabled="true"
-        android:exported="true"
-        android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
-        <intent-filter>
-            <action android:name="android.intent.action.BOOT_COMPLETED"/>
-        </intent-filter>
-    </receiver>
+        android:exported="false"
+        android:stopWithTask="false"
+        android:foregroundServiceType="location">
+    </service>
 </application>
 ```
 
