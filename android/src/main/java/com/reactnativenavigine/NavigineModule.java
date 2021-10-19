@@ -73,6 +73,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.Objects;
+import android.bluetooth.BluetoothAdapter;
 
 import java.util.ArrayList;
 
@@ -138,6 +139,17 @@ public class NavigineModule extends ReactContextBaseJavaModule {
 
       final Activity activity = getCurrentActivity();
 
+        ActivityCompat.requestPermissions(activity, new String[] { Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+            Manifest.permission.FOREGROUND_SERVICE,
+            Manifest.permission.BLUETOOTH,
+            Manifest.permission.BLUETOOTH_ADMIN,
+            Manifest.permission.ACCESS_WIFI_STATE,
+            Manifest.permission.CHANGE_WIFI_STATE,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE}, 225);
+
       verifyBluetooth();
 
       initNavigineSDK();
@@ -146,18 +158,6 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       NavigineApp.initializeSdk();
 
       mCurrentSubLocationIndex = 0;
-
-      ActivityCompat.requestPermissions(activity, new String[] { Manifest.permission.ACCESS_FINE_LOCATION,
-              Manifest.permission.ACCESS_COARSE_LOCATION,
-              Manifest.permission.ACCESS_BACKGROUND_LOCATION,
-              Manifest.permission.FOREGROUND_SERVICE,
-              Manifest.permission.BLUETOOTH,
-              Manifest.permission.BLUETOOTH_ADMIN,
-              Manifest.permission.ACCESS_WIFI_STATE,
-              Manifest.permission.CHANGE_WIFI_STATE,
-              Manifest.permission.READ_EXTERNAL_STORAGE,
-              Manifest.permission.WRITE_EXTERNAL_STORAGE}, 225);
-
 
       initCallback = callback;
     }
@@ -245,6 +245,16 @@ public class NavigineModule extends ReactContextBaseJavaModule {
 
     private void verifyBluetooth() {
         try {
+            BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            if (bluetoothAdapter == null) {
+                // Device doesn't support Bluetooth
+                Log.d("NavigineSDK", "NO BLUETOOTH ==1==");
+            }
+
+            if (!bluetoothAdapter.isEnabled()) {
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            }
+
             if (!((BluetoothManager) this.mContext.getSystemService("bluetooth")).getAdapter().isEnabled()) {
                 Log.d("NavigineSDK", "NO BLUETOOTH");
             }
