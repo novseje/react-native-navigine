@@ -150,8 +150,13 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       ActivityCompat.requestPermissions(activity, new String[] { Manifest.permission.ACCESS_FINE_LOCATION,
               Manifest.permission.ACCESS_COARSE_LOCATION,
               Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+              Manifest.permission.FOREGROUND_SERVICE,
+              Manifest.permission.BLUETOOTH,
+              Manifest.permission.BLUETOOTH_ADMIN,
+              Manifest.permission.ACCESS_WIFI_STATE,
+              Manifest.permission.CHANGE_WIFI_STATE,
               Manifest.permission.READ_EXTERNAL_STORAGE,
-              Manifest.permission.WRITE_EXTERNAL_STORAGE}, 101);
+              Manifest.permission.WRITE_EXTERNAL_STORAGE}, 225);
 
 
       initCallback = callback;

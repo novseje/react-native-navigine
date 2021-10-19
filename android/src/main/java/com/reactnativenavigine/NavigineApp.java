@@ -94,23 +94,14 @@ public class NavigineApp extends Application implements LifecycleObserver {
         try {
             NavigineSdk.setUserHash(UserHash);
             NavigineSdk.setServer(LocationServer);
-            Log.d("NavigineApp_N", "1");
-        //>    mNavigineSdk = NavigineSdk.getInstance();
-            Log.d("NavigineApp_N", "2");
-            /*LocationListManager = mNavigineSdk.getLocationListManager();
-            Log.d("NavigineApp_N", "3");
-            LocationManager = mNavigineSdk.getLocationManager();
-            Log.d("NavigineApp_N", "4");
-            ResourceManager = mNavigineSdk.getResourceManager(LocationManager);
-            Log.d("NavigineApp_N", "5");
-            NavigationManager = mNavigineSdk.getNavigationManager(LocationManager);
-            Log.d("NavigineApp_N", "6");
+            mNavigineSdk = NavigineSdk.getInstance();
+            LocationListManager = mNavigineSdk.getLocationListManager();
+//>>>>>>>>            LocationManager = mNavigineSdk.getLocationManager();
+            //ResourceManager = mNavigineSdk.getResourceManager(LocationManager);
+            //NavigationManager = mNavigineSdk.getNavigationManager(LocationManager);
             MeasurementManager = mNavigineSdk.getMeasurementManager();
-            Log.d("NavigineApp_N", "7");
-            RouteManager = mNavigineSdk.getRouteManager(LocationManager, NavigationManager);
-            Log.d("NavigineApp_N", "8");
-            NotificationManager = mNavigineSdk.getNotificationManager(LocationManager);
-            Log.d("NavigineApp_N", "9");*/
+            //RouteManager = mNavigineSdk.getRouteManager(LocationManager, NavigationManager);
+            //NotificationManager = mNavigineSdk.getNotificationManager(LocationManager);
         } catch (Exception e) {
             Log.d("NavigineApp", "ERROR: " + e.getMessage());
             return false;

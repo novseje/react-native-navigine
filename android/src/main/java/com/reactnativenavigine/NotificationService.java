@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.SystemClock;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -31,6 +32,7 @@ public class NotificationService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d("NavigineSDK", "onStartCommand()");
         super.onStartCommand(intent, flags, startId);
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -58,6 +60,7 @@ public class NotificationService extends Service {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private String createNotificationChannel(NotificationManager notificationManager){
+        Log.d("NavigineSDK", "createNotificationChannel()");
         String channelId = "my_service_channelid";
         String channelName = "Navigine Foreground";
         NotificationChannel channel = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH);
@@ -68,6 +71,7 @@ public class NotificationService extends Service {
 
     @Override
     public void onTaskRemoved(Intent rootIntent){
+        Log.d("NavigineSDK", "onTaskRemoved()");
         Intent restartServiceIntent = new Intent(getApplicationContext(), this.getClass());
         restartServiceIntent.setPackage(getPackageName());
 

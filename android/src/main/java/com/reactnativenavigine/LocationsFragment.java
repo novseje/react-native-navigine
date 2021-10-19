@@ -76,9 +76,9 @@ public class LocationsFragment extends Fragment {
 
                 mLoaderAdapter = new LocationLoaderAdapter();
 
-                mListView = view.findViewById(R.id.locations_fragment__list_view);
-                mListView.setAdapter(mLoaderAdapter);
-                mListView.setVisibility(View.VISIBLE);
+                ///mListView = view.findViewById(R.id.locations_fragment__list_view);
+                ///mListView.setAdapter(mLoaderAdapter);
+                ///mListView.setVisibility(View.VISIBLE);
             }
 
             @Override
