@@ -6,23 +6,14 @@ Pod::Spec.new do |s|
   s.name         = "react-native-navigine"
   s.version      = package["version"]
   s.summary      = package["description"]
-  s.description  = <<-DESC
-                  react-native-navigine
-                   DESC
-  s.homepage     = "https://github.com/github_account/react-native-navigine"
-  # brief license entry:
-  s.license      = "MIT"
-  # optional - use expanded license entry instead:
-  # s.license    = { :type => "MIT", :file => "LICENSE" }
-  s.authors      = { "Your Name" => "yourname@email.com" }
-  s.platforms    = { :ios => "9.0" }
-  s.source       = { :git => "https://github.com/github_account/react-native-navigine.git", :tag => "#{s.version}" }
+  s.homepage     = package["homepage"]
+  s.license      = package["license"]
+  s.authors      = package["author"]
 
-  s.source_files = "ios/**/*.{h,c,m,swift}"
-  s.requires_arc = true
+  s.platforms    = { :ios => "10.0" }
+  s.source       = { :git => "https://github.com/novseje/react-native-navigine.git", :tag => "#{s.version}" }
 
-  s.dependency "React"
-  # ...
-  # s.dependency "..."
+  s.source_files = "ios/**/*.{h,m,mm,swift}"
+
+  s.dependency "React-Core"
 end
-
