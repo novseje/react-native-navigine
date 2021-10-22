@@ -33,9 +33,50 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import java.util.Base64;
 
-import com.navigine.naviginesdk.*;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+
+import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import android.Manifest;
+import android.annotation.TargetApi;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.bluetooth.BluetoothManager;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.PowerManager;
+import android.provider.Settings;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.util.Objects;
+import android.bluetooth.BluetoothAdapter;
 
 import java.util.ArrayList;
+
 
 @ReactModule(name = NavigineModule.NAME)
 public class NavigineModule extends ReactContextBaseJavaModule {
@@ -51,20 +92,7 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       private static final boolean  ORIENTATION_ENABLED     = true; // Show device orientation?
       private static final boolean  NOTIFICATIONS_ENABLED   = true; // Show zone notifications?
 
-      // NavigationThread instance
-      private NavigationThread mNavigation            = null;
-
-      // UI Parameters
-      private LocationView  mLocationView             = null;
-      private Button        mPrevFloorButton          = null;
-      private Button        mNextFloorButton          = null;
       private View          mBackView                 = null;
-      private View          mPrevFloorView            = null;
-      private View          mNextFloorView            = null;
-      private View          mZoomInView               = null;
-      private View          mZoomOutView              = null;
-      private View          mAdjustModeView           = null;
-      private TextView      mCurrentFloorLabel        = null;
       private TextView      mErrorMessageLabel        = null;
       private float         mDisplayDensity           = 0.0f;
 
@@ -72,13 +100,9 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       private long          mAdjustTime               = 0;
 
       // Location parameters
-      private Location      mLocation                 = null;
       private int           mCurrentSubLocationIndex  = -1;
 
       // Device parameters
-      private DeviceInfo    mDeviceInfo               = null; // Current device
-      private LocationPoint mPinPoint                 = null; // Potential device target
-      private LocationPoint mTargetPoint              = null; // Current device target
       private RectF         mPinPointRect             = null;
 
       private RelativeLayout mDirectionLayout         = null;
@@ -86,18 +110,15 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       private ImageView      mDirectionImageView      = null;
 
       private Bitmap  mVenueBitmap    = null;
-      private Venue   mTargetVenue    = null;
-      private Venue   mSelectedVenue  = null;
       private RectF   mSelectedVenueRect = null;
-      private Zone    mSelectedZone   = null;
 
-      private boolean DEBUG_LOG = false;
+      private boolean DEBUG_LOG = true;
       private String API_KEY;
       private String API_SERVER = "https://api.navigine.com"; // API server
       private int LOCATION_ID;
       private Callback       initCallback   = null;
 
-      private ArrayList<Zone> zonesCollect = new ArrayList<Zone>();
+      //private ArrayList<Zone> zonesCollect = new ArrayList<Zone>();
 
 
     public NavigineModule(ReactApplicationContext reactContext) {
@@ -118,220 +139,76 @@ public class NavigineModule extends ReactContextBaseJavaModule {
 
       final Activity activity = getCurrentActivity();
 
-      // Setting up NavigineSDK parameters
-      NavigineSDK.setParameter(mContext, "debug_level", 2);
-      NavigineSDK.setParameter(mContext, "actions_updates_enabled",  false);
-      NavigineSDK.setParameter(mContext, "location_updates_enabled", true);
-      NavigineSDK.setParameter(mContext, "location_loader_timeout",  60);
-      NavigineSDK.setParameter(mContext, "location_update_timeout",  300);
-      NavigineSDK.setParameter(mContext, "location_retry_timeout",   300);
-      NavigineSDK.setParameter(mContext, "post_beacons_enabled",     true);
-      NavigineSDK.setParameter(mContext, "post_messages_enabled",    true);
+        ActivityCompat.requestPermissions(activity, new String[] { Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+            Manifest.permission.FOREGROUND_SERVICE,
+            Manifest.permission.BLUETOOTH,
+            Manifest.permission.BLUETOOTH_ADMIN,
+            Manifest.permission.ACCESS_WIFI_STATE,
+            Manifest.permission.CHANGE_WIFI_STATE,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE}, 225);
 
-      // Initializing location view
-    //  LocationView mLocationView = new LocationView(mContext);
+      verifyBluetooth();
+
+      initNavigineSDK();
+
+      NavigineApp.UserHash = apiKey;
+      NavigineApp.initializeSdk();
 
       mCurrentSubLocationIndex = 0;
 
-      ActivityCompat.requestPermissions(activity, new String[] { Manifest.permission.ACCESS_FINE_LOCATION,
-              Manifest.permission.ACCESS_COARSE_LOCATION,
-              Manifest.permission.READ_EXTERNAL_STORAGE,
-              Manifest.permission.WRITE_EXTERNAL_STORAGE}, 101);
-
-
-      /*
-      if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-        requestPermissions( //Method of Fragment
-                new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION,
-                        Manifest.permission.READ_EXTERNAL_STORAGE,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                101
-        );
-      } else {
-        Log.d(TAG, "Permissions already granted");
-      }
-      */
-
       initCallback = callback;
-
-      if (DEBUG_LOG) Log.d(TAG, "NavigineSDK.initialize | START");
-      if (NavigineSDK.initialize(mContext, API_KEY, API_SERVER))
-      {
-          if (DEBUG_LOG) Log.d(TAG, "NavigineSDK.initialize | OK");
-
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-               @Override
-               public void run() {
-                 boolean isLoaded = NavigineSDK.loadLocationInBackground(LOCATION_ID, 30,
-                         new Location.LoadListener()
-                         {
-                           @Override public void onFinished()
-                           {
-                             Log.d(TAG, "onFinished");
-
-                             drawZones();
-                             drawPoints();
-                             drawVenues();
-                             drawDevice();
-
-                             mNavigation = NavigineSDK.getNavigation();
-                             if (DEBUG_LOG) Log.d(TAG, "mNavigation = " + mNavigation.toString());
-
-                             loadMap();
-
-                             // Setting up device listener
-                             if (mNavigation != null)
-                             {
-                               mNavigation.setDeviceListener
-                               (
-                                       new DeviceInfo.Listener()
-                                       {
-                                         @Override public void onUpdate(DeviceInfo info) { handleDeviceUpdate(info); }
-                                       }
-                               );
-                             }
-
-                             // Setting up zone listener
-                             if (mNavigation != null)
-                             {
-                               mNavigation.setZoneListener
-                               (
-                                 new Zone.Listener()
-                                 {
-                                   @Override public void onEnterZone(Zone z) { handleEnterZone(z); }
-                                   @Override public void onLeaveZone(Zone z) { handleLeaveZone(z); }
-                                 }
-                               );
-                             }
-
-                             if (DEBUG_LOG) Log.d(TAG, "init() callback");
-                             initCallback.invoke("init()");
-
-                           }
-                           @Override public void onFailed(int error)
-                           {
-                             Log.d(TAG, "Error downloading location 'Navigine Demo' (error " + error + ")! " +
-                                     "Please, try again later or contact technical support");
-                           }
-                           @Override public void onUpdate(int progress)
-                           {
-                             Log.d(TAG, "Downloading location: " + progress + "%");
-                           }
-                         });
-                         if (DEBUG_LOG) Log.d(TAG, "NavigineSDK.loadLocationInBackground() isLoaded? = " + isLoaded);
-               }
-        });
-
-
-      }
-
-      if (DEBUG_LOG) Log.d(TAG, "init() END");
     }
 
     @ReactMethod
     public void getFloorImage(Callback callback) {
       if (DEBUG_LOG) Log.d(TAG, "getFloorImage()");
 
+      callback.invoke("");
+      return;
+/*
       SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
       if (DEBUG_LOG) Log.d(TAG, "Image:" + subLoc.getImage());
 
       String encodedFile = new String(Base64.getEncoder().encode(subLoc.getImage().getData()));
 
       callback.invoke(encodedFile);
+ */
     }
 
     @ReactMethod
     public void getCurPosition(Callback callback) {
       if (DEBUG_LOG) Log.d(TAG, "getCurPosition()");
 
-      if (DEBUG_LOG) Log.d(TAG, "Cur x: " + mDeviceInfo.getX() + ", y: " + mDeviceInfo.getY());
-      SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
-
-      if (DEBUG_LOG) Log.d(TAG, "Location size: x: " + subLoc.getWidth() + ", y: " + subLoc.getHeight());
-
-      callback.invoke(mDeviceInfo.getX() + "|" + (subLoc.getHeight() - mDeviceInfo.getY()));
+      callback.invoke(10 + "|" + 20);
     }
 
     @ReactMethod
     public void getAzimuth(Callback callback) {
       if (DEBUG_LOG) Log.d(TAG, "getAzimuth()");
 
-      if (DEBUG_LOG) Log.d(TAG, "getAzimuth: " + mDeviceInfo.getAzimuth());
-
-      callback.invoke(mDeviceInfo.getAzimuth());
+      callback.invoke(0);
     }
 
     @ReactMethod
     public void getFloorImageSizes(Callback callback) {
       if (DEBUG_LOG) Log.d(TAG, "getFloorImageSizes()");
 
-      SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
-      if (DEBUG_LOG) Log.d(TAG, String.format(Locale.ENGLISH, "Loading sublocation %s (%.2f x %.2f)", subLoc.getName(), subLoc.getWidth(), subLoc.getHeight()));
-
-      callback.invoke(subLoc.getWidth() + "|" + subLoc.getHeight());
+      callback.invoke(100 + "|" + 200);
     }
 
     @ReactMethod
     public void didEnterZones(Callback callback) {
       if (DEBUG_LOG) Log.d(TAG, "didEnterZones()");
 
-      if (this.zonesCollect.size() < 1) {
-        callback.invoke("");
-        return;
-      }
-
-      for (Zone z : zonesCollect) {
-        if (DEBUG_LOG) Log.d(TAG, "ZONE: " + z.getName());
-      }
-
-      Zone z = this.zonesCollect.get(this.zonesCollect.size() - 1);
-
-      callback.invoke(z.getName());
-      this.zonesCollect.clear();
+      callback.invoke("");
     }
 
     @ReactMethod
     public void getRoutePoints(Callback callback) {
       if (DEBUG_LOG) Log.d(TAG, "getRoutePoints()");
-      if (DEBUG_LOG) Log.d(TAG, "PATHS COUNT: " + String.valueOf(mDeviceInfo.getPaths().size()));
-      if (mDeviceInfo.getPaths() != null && mDeviceInfo.getPaths().size() > 0)
-      {
-        RoutePath path = mDeviceInfo.getPaths().get(0);
-        if (DEBUG_LOG) Log.d(TAG, "PATH SIZE: " + String.valueOf(path.getPoints().size()));
-        if (path.getPoints().size() >= 2)
-        {
-          SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
-
-          ArrayList<String> pointsArray = new ArrayList<String>();
-          for(int j = 0; j < path.getPoints().size(); j++)
-          {
-
-            LocationPoint Q = path.getPoints().get(j);
-            if (DEBUG_LOG) Log.d(TAG, "Q.x = " + String.valueOf(Q.x));
-
-              pointsArray.add("{\"x\": "+ String.valueOf(Q.x) + ", \"y\": " + String.valueOf(subLoc.getHeight() - Q.y) + "}");
-            //  canvas.drawLine(P1.x, P1.y, Q1.x, Q1.y, paint);
-
-
-            //Log.d(TAG, "Cur x: " + mDeviceInfo.getX() + ", y: " + mDeviceInfo.getY());
-            //      SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
-
-              //    callback.invoke(mDeviceInfo.getX() + "|" + (subLoc.getHeight() - mDeviceInfo.getY()));
-
-          }
-          String pointsString = "[";
-          for (String s : pointsArray)
-          {
-            pointsString += s + ", ";
-          }
-          pointsString = pointsString.replaceAll(",\\s*$", "");
-          pointsString += "]";
-          callback.invoke(pointsString);
-          return;
-        }
-      }
-
 
       callback.invoke("[]");
     }
@@ -339,24 +216,6 @@ public class NavigineModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void setRouteDestination(float x, float y, Callback callback) {
       if (DEBUG_LOG) Log.d(TAG, String.format(Locale.ENGLISH, "setRouteDestination: x:%.2f, y:%.2f)", x, y));
-
-      if (mLocation != null && mCurrentSubLocationIndex >= 0) {
-        SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
-        if (subLoc != null) {
-          mPinPoint = new LocationPoint(mLocation.getId(), subLoc.getId(), x, subLoc.getHeight() - y);
-          if (DEBUG_LOG) Log.d(TAG, "mPinPoint");
-          if (mPinPoint != null)
-          {
-              mTargetPoint  = mPinPoint;
-              mTargetVenue  = null;
-              mPinPoint     = null;
-              mNavigation.setTarget(mTargetPoint);
-              if (DEBUG_LOG) Log.d(TAG, "setTarget");
-              cancelPin();
-          }
-        }
-      }
-
 
       callback.invoke("OK");
     }
@@ -367,663 +226,42 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       callback.invoke("1");
     }
 
-      public void onNextFloor(View v)
-      {
-        if (loadNextSubLocation())
-          mAdjustTime = System.currentTimeMillis() + ADJUST_TIMEOUT;
-      }
 
-      public void onPrevFloor(View v)
-      {
-        if (loadPrevSubLocation())
-          mAdjustTime = System.currentTimeMillis() + ADJUST_TIMEOUT;
-      }
+//-------------------- NATIVE FUNCTIONS --------------------
 
-      public void onZoomIn(View v)
-      {
-        mLocationView.zoomBy(1.25f);
-      }
+      private void initNavigineSDK() {
+        if (DEBUG_LOG) Log.d(TAG, "initNavigineSDK()");
 
-      public void onZoomOut(View v)
-      {
-        mLocationView.zoomBy(0.8f);
-      }
-
-      public void onMakeRoute(View v)
-      {
-        if (mNavigation == null)
-          return;
-
-        if (mPinPoint == null)
-          return;
-
-        mTargetPoint  = mPinPoint;
-        mTargetVenue  = null;
-        mPinPoint     = null;
-        mPinPointRect = null;
-
-        mNavigation.setTarget(mTargetPoint);
-        mBackView.setVisibility(View.VISIBLE);
-        mLocationView.redraw();
-      }
-
-      public void onCancelRoute(View v)
-      {
-        if (mNavigation == null)
-          return;
-
-        mTargetPoint  = null;
-        mTargetVenue  = null;
-        mPinPoint     = null;
-        mPinPointRect = null;
-
-        mNavigation.cancelTargets();
-        mLocationView.redraw();
-      }
-
-      private void handleClick(float x, float y)
-      {
-        Log.d(TAG, String.format(Locale.ENGLISH, "Click at (%.2f, %.2f)", x, y));
-
-        if (mLocation == null || mCurrentSubLocationIndex < 0)
-          return;
-
-        SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
-        if (subLoc == null)
-          return;
-
-        if (mPinPoint != null)
-        {
-          if (mPinPointRect != null && mPinPointRect.contains(x, y))
-          {
-            mTargetPoint  = mPinPoint;
-            mTargetVenue  = null;
-            mPinPoint     = null;
-            mPinPointRect = null;
-            mNavigation.setTarget(mTargetPoint);
-            mBackView.setVisibility(View.VISIBLE);
-            return;
-          }
-          cancelPin();
-          return;
-        }
-
-        if (mSelectedVenue != null)
-        {
-          if (mSelectedVenueRect != null && mSelectedVenueRect.contains(x, y))
-          {
-            mTargetVenue = mSelectedVenue;
-            mTargetPoint = null;
-            mNavigation.setTarget(new LocationPoint(mLocation.getId(), subLoc.getId(), mTargetVenue.getX(), mTargetVenue.getY()));
-            mBackView.setVisibility(View.VISIBLE);
-          }
-          cancelVenue();
-          return;
-        }
-
-        // Check if we touched venue
-        mSelectedVenue = getVenueAt(x, y);
-        mSelectedVenueRect = new RectF();
-
-        // Check if we touched zone
-        if (mSelectedVenue == null)
-        {
-          Zone Z = getZoneAt(x, y);
-          if (Z != null)
-            mSelectedZone = (mSelectedZone == Z) ? null : Z;
-        }
-
-        mLocationView.redraw();
-      }
-
-      private void handleLongClick(float x, float y)
-      {
-        Log.d(TAG, String.format(Locale.ENGLISH, "Long click at (%.2f, %.2f)", x, y));
-        makePin(mLocationView.getAbsCoordinates(x, y));
-        cancelVenue();
-      }
-
-      private void handleScroll(float x, float y, boolean byTouchEvent)
-      {
-        if (byTouchEvent)
-          mAdjustTime = NavigineSDK.currentTimeMillis() + ADJUST_TIMEOUT;
-      }
-
-      private void handleZoom(float ratio, boolean byTouchEvent)
-      {
-        if (byTouchEvent)
-          mAdjustTime = NavigineSDK.currentTimeMillis() + ADJUST_TIMEOUT;
-      }
-
-      private void handleEnterZone(Zone z)
-      {
-        Log.d(TAG, "Enter zone " + z.getName());
-        this.zonesCollect.add(z);
-      }
-
-      private void handleLeaveZone(Zone z)
-      {
-        Log.d(TAG, "Leave zone " + z.getName());
-        if (NOTIFICATIONS_ENABLED)
-        {
-
+        NavigineApp.createInstance(this.mContext.getApplicationContext());
+        Intent i = new Intent(this.mContext.getApplicationContext(), com.reactnativenavigine.NotificationService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Log.d("NavigineSDK", "startForegroundService()>>");
+          this.mContext.getApplicationContext().startForegroundService(i);
+        } else {
+            Log.d("NavigineSDK", "startService()>>");
+          this.mContext.getApplicationContext().startService(i);
         }
       }
 
-      private void handleDeviceUpdate(DeviceInfo deviceInfo)
-      {
-        if (DEBUG_LOG) Log.d(TAG, "handleDeviceUpdate()");
-
-        mDeviceInfo = deviceInfo;
-        if (mDeviceInfo == null)
-          return;
-
-        if (DEBUG_LOG) Log.d(TAG, "mDeviceInfo not null");
-
-        // Check if location is loaded
-        if (mLocation == null || mCurrentSubLocationIndex < 0)
-          return;
-
-        if (DEBUG_LOG) Log.d(TAG, "mLocation not null");
-
-        if (mDeviceInfo.isValid() && mDeviceInfo.getPaths().size() != 0) {
-          if (mDeviceInfo.getPaths().get(0).getEvents().size() >= 1)
-            showDirections(mDeviceInfo.getPaths().get(0));
-        }
-        else{
-        //mDirectionLayout.setVisibility(GONE);
-          if (DEBUG_LOG) Log.d(TAG, "mDeviceInfo no valid");
-        }
-
-        if (DEBUG_LOG) Log.d(TAG, "TEST getSubLocationId(): " + mDeviceInfo.getSubLocationId());
-        if (DEBUG_LOG) Log.d(TAG, "TEST getX(): " + mDeviceInfo.getX());
-        if (DEBUG_LOG) Log.d(TAG, "TEST mDeviceInfo.getPaths(): " + mDeviceInfo.getPaths());
-        if (DEBUG_LOG) Log.d(TAG, "TEST getDeviceInfo(): " + mNavigation.getDeviceInfo().getY());
-
-
-        if (mDeviceInfo.isValid())
-        {
-          if (mAdjustMode)
-            adjustDevice();
-        }
-        else
-        {
-
-          switch (mDeviceInfo.getErrorCode())
-          {
-            case 4:
-              Log.d(TAG, "You are out of navigation zone! Please, check that your bluetooth is enabled!");
-              break;
-
-            case 8:
-            case 30:
-              Log.d(TAG, "Not enough beacons on the location! Please, add more beacons!");
-              break;
-
-            default:
-              Log.d(TAG, String.format(Locale.ENGLISH,
-                              "Something is wrong with location '%s' (error code %d)! " +
-                              "Please, contact technical support!",
-                              mLocation.getName(), mDeviceInfo.getErrorCode()));
-              break;
-          }
-        }
-
-        Log.d(TAG, "Cur x: " + mDeviceInfo.getX() + ", y: " + mDeviceInfo.getY());
-
-        // This causes map redrawing
-       // mLocationView.redraw();
-      }
-
-      private void setErrorMessage(String message)
-      {
-        mErrorMessageLabel.setText(message);
-        mErrorMessageLabel.setVisibility(View.VISIBLE);
-      }
-
-      private void cancelErrorMessage()
-      {
-        mErrorMessageLabel.setVisibility(View.GONE);
-      }
-
-      private boolean loadMap()
-      {
-        if (mNavigation == null)
-        {
-          Log.e(TAG, "Can't load map! Navigine SDK is not available!");
-          return false;
-        }
-
-        mLocation = mNavigation.getLocation();
-        mCurrentSubLocationIndex = -1;
-
-        Log.e(TAG, "mNavigation.getLocation(): " + mNavigation.getLocation());
-
-        if (mLocation == null)
-        {
-          Log.e(TAG, "Loading map failed: no location");
-          return false;
-        }
-
-        if (mLocation.getSubLocations().size() == 0)
-        {
-          Log.e(TAG, "Loading map failed: no sublocations");
-          mLocation = null;
-          return false;
-        }
-
-        if (!loadSubLocation(0))
-        {
-          Log.e(TAG, "Loading map failed: unable to load default sublocation");
-          mLocation = null;
-          return false;
-        }
-
-        mNavigation.setMode(NavigationThread.MODE_NORMAL);
-
-        mNavigation.setLogFile(getLogFile("log"));
-
-      //  mLocationView.redraw();
-        return true;
-      }
-
-      private boolean loadSubLocation(int index)
-      {
-        if (mNavigation == null)
-          return false;
-
-        if (mLocation == null || index < 0 || index >= mLocation.getSubLocations().size())
-          return false;
-
-        SubLocation subLoc = mLocation.getSubLocations().get(index);
-        Log.d(TAG, String.format(Locale.ENGLISH, "Loading sublocation %s (%.2f x %.2f)", subLoc.getName(), subLoc.getWidth(), subLoc.getHeight()));
-
-        if (subLoc.getWidth() < 1.0f || subLoc.getHeight() < 1.0f)
-        {
-          Log.e(TAG, String.format(Locale.ENGLISH, "Loading sublocation failed: invalid size: %.2f x %.2f", subLoc.getWidth(), subLoc.getHeight()));
-          return false;
-        }
-/*
-        if (!mLocationView.loadSubLocation(subLoc))
-        {
-          Log.e(TAG, "Loading sublocation failed: invalid image");
-          return false;
-        }
-
-        float viewWidth  = mLocationView.getWidth();
-        float viewHeight = mLocationView.getHeight();
-        float minZoomFactor = Math.min(viewWidth / subLoc.getWidth(), viewHeight / subLoc.getHeight());
-        float maxZoomFactor = LocationView.ZOOM_FACTOR_MAX;
-        mLocationView.setZoomRange(minZoomFactor, maxZoomFactor);
-        mLocationView.setZoomFactor(minZoomFactor);
-        Log.d(TAG, String.format(Locale.ENGLISH, "View size: %.1f x %.1f", viewWidth, viewHeight));
-*/
-        mAdjustTime = 0;
-        mCurrentSubLocationIndex = index;
-
-        cancelVenue();
-      //  mLocationView.redraw();
-        return true;
-      }
-
-      private boolean loadNextSubLocation()
-      {
-        if (mLocation == null || mCurrentSubLocationIndex < 0)
-          return false;
-        return loadSubLocation(mCurrentSubLocationIndex + 1);
-      }
-
-      private boolean loadPrevSubLocation()
-      {
-        if (mLocation == null || mCurrentSubLocationIndex < 0)
-          return false;
-        return loadSubLocation(mCurrentSubLocationIndex - 1);
-      }
-
-      private void makePin(PointF P)
-      {
-        if (mLocation == null || mCurrentSubLocationIndex < 0)
-          return;
-
-        SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
-        if (subLoc == null)
-          return;
-
-        if (P.x < 0.0f || P.x > subLoc.getWidth() ||
-            P.y < 0.0f || P.y > subLoc.getHeight())
-        {
-          // Missing the map
-          return;
-        }
-
-        if (mTargetPoint != null || mTargetVenue != null)
-          return;
-
-        if (mDeviceInfo == null || !mDeviceInfo.isValid())
-          return;
-
-        mPinPoint = new LocationPoint(mLocation.getId(), subLoc.getId(), P.x, P.y);
-        mPinPointRect = new RectF();
-        if (DEBUG_LOG) Log.d(TAG, "makePin <END>");
-        //mLocationView.redraw();
-      }
-
-      private void cancelPin()
-      {
-        if (mLocation == null || mCurrentSubLocationIndex < 0)
-          return;
-
-        SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
-        if (subLoc == null)
-          return;
-
-        if (mTargetPoint != null || mTargetVenue != null || mPinPoint == null)
-          return;
-
-        mPinPoint = null;
-        mPinPointRect = null;
-        //mLocationView.redraw();
-      }
-
-      private void cancelVenue()
-      {
-        mSelectedVenue = null;
-    //    mLocationView.redraw();
-      }
-
-      private Venue getVenueAt(float x, float y)
-      {
-        if (mLocation == null || mCurrentSubLocationIndex < 0)
-          return null;
-
-        SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
-        if (subLoc == null)
-          return null;
-
-        Venue v0 = null;
-        float d0 = 1000.0f;
-
-        for(int i = 0; i < subLoc.getVenues().size(); ++i)
-        {
-          Venue v = subLoc.getVenues().get(i);
-          PointF P = mLocationView.getScreenCoordinates(v.getX(), v.getY());
-          float d = Math.abs(x - P.x) + Math.abs(y - P.y);
-          if (d < 30.0f * mDisplayDensity && d < d0)
-          {
-            v0 = v;
-            d0 = d;
-          }
-        }
-
-        return v0;
-      }
-
-      private Zone getZoneAt(float x, float y)
-      {
-        if (mLocation == null || mCurrentSubLocationIndex < 0)
-          return null;
-
-        SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
-        if (subLoc == null)
-          return null;
-
-        PointF P = mLocationView.getAbsCoordinates(x, y);
-        LocationPoint LP = new LocationPoint(mLocation.getId(), subLoc.getId(), P.x, P.y);
-
-        for(int i = 0; i < subLoc.getZones().size(); ++i)
-        {
-          Zone Z = subLoc.getZones().get(i);
-          if (Z.contains(LP))
-            return Z;
-        }
-        return null;
-      }
-
-      private void drawPoints()
-      {
-        Log.d(TAG, "drawPoints()");
-
-        // Check if location is loaded
-        if (mLocation == null || mCurrentSubLocationIndex < 0)
-          return;
-
-        // Get current sublocation displayed
-        SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
-
-        if (subLoc == null)
-          return;
-
-      }
-
-      private void drawVenues()
-      {
-        Log.d(TAG, "drawVenues()");
-
-        if (mLocation == null || mCurrentSubLocationIndex < 0)
-          return;
-
-        SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
-
-      }
-
-      private void drawZones()
-      {
-        Log.d(TAG, "drawZones()");
-
-        // Check if location is loaded
-        if (mLocation == null || mCurrentSubLocationIndex < 0)
-          return;
-
-        // Get current sublocation displayed
-        SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
-        if (subLoc == null)
-          return;
-
-        // Preparing paints
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setStyle(Paint.Style.FILL_AND_STROKE);
-
-        for(int i = 0; i < subLoc.getZones().size(); ++i)
-        {
-          Zone Z = subLoc.getZones().get(i);
-          if (Z.getPoints().size() < 3)
-            continue;
-
-          boolean selected = (Z == mSelectedZone);
-
-          Path path = new Path();
-          final LocationPoint P0 = Z.getPoints().get(0);
-          final PointF        Q0 = mLocationView.getScreenCoordinates(P0);
-          path.moveTo(Q0.x, Q0.y);
-
-          for(int j = 0; j < Z.getPoints().size(); ++j)
-          {
-            final LocationPoint P = Z.getPoints().get((j + 1) % Z.getPoints().size());
-            final PointF        Q = mLocationView.getScreenCoordinates(P);
-            path.lineTo(Q.x, Q.y);
-          }
-
-          int zoneColor = Color.parseColor(Z.getColor());
-          int red       = (zoneColor >> 16) & 0xff;
-          int green     = (zoneColor >> 8 ) & 0xff;
-          int blue      = (zoneColor >> 0 ) & 0xff;
-          paint.setColor(Color.argb(selected ? 200 : 100, red, green, blue));
-        }
-      }
-
-      private void drawDevice()
-      {
-        Log.d(TAG, "drawDevice()");
-
-        // Check if location is loaded
-        if (mLocation == null || mCurrentSubLocationIndex < 0)
-          return;
-
-        // Check if navigation is available
-        if (mDeviceInfo == null || !mDeviceInfo.isValid())
-          return;
-
-        // Get current sublocation displayed
-        SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
-
-        if (subLoc == null)
-          return;
-
-        final int solidColor  = Color.argb(255, 64,  163, 205); // Light-blue color
-        final int circleColor = Color.argb(127, 64,  163, 205); // Semi-transparent light-blue color
-        final int arrowColor  = Color.argb(255, 255, 255, 255); // White color
-        final float dp = mDisplayDensity;
-
-        // Preparing paints
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setStyle(Paint.Style.FILL_AND_STROKE);
-        paint.setStrokeCap(Paint.Cap.ROUND);
-
-        /// Drawing device path (if it exists)
-        if (mDeviceInfo.getPaths() != null && mDeviceInfo.getPaths().size() > 0)
-        {
-          RoutePath path = mDeviceInfo.getPaths().get(0);
-          if (path.getPoints().size() >= 2)
-          {
-            paint.setColor(solidColor);
-
-            for(int j = 1; j < path.getPoints().size(); ++j)
-            {
-              LocationPoint P = path.getPoints().get(j-1);
-              LocationPoint Q = path.getPoints().get(j);
-              if (P.subLocation == subLoc.getId() && Q.subLocation == subLoc.getId())
-              {
-                paint.setStrokeWidth(3 * dp);
-                PointF P1 = mLocationView.getScreenCoordinates(P);
-                PointF Q1 = mLocationView.getScreenCoordinates(Q);
-              //  canvas.drawLine(P1.x, P1.y, Q1.x, Q1.y, paint);
-              }
+    private void verifyBluetooth() {
+        try {
+            BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            if (bluetoothAdapter == null) {
+                // Device doesn't support Bluetooth
+                Log.d("NavigineSDK", "NO BLUETOOTH ==1==");
             }
-          }
+
+            if (!bluetoothAdapter.isEnabled()) {
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            }
+
+            if (!((BluetoothManager) this.mContext.getSystemService("bluetooth")).getAdapter().isEnabled()) {
+                Log.d("NavigineSDK", "NO BLUETOOTH");
+            }
         }
-
-        paint.setStrokeCap(Paint.Cap.BUTT);
-
-        // Check if device belongs to the current sublocation
-        if (mDeviceInfo.getSubLocationId() != subLoc.getId())
-          return;
-
-        final float x  = mDeviceInfo.getX();
-        final float y  = mDeviceInfo.getY();
-        final float r  = mDeviceInfo.getR();
-        final float angle = mDeviceInfo.getAzimuth();
-        final float sinA = (float)Math.sin(angle);
-        final float cosA = (float)Math.cos(angle);
-        final float radius  = mLocationView.getScreenLengthX(r);  // External radius: navigation-determined, transparent
-        final float radius1 = 25 * dp;                            // Internal radius: fixed, solid
-
-        PointF O = mLocationView.getScreenCoordinates(x, y);
-        PointF P = new PointF(O.x - radius1 * sinA * 0.22f, O.y + radius1 * cosA * 0.22f);
-        PointF Q = new PointF(O.x + radius1 * sinA * 0.55f, O.y - radius1 * cosA * 0.55f);
-        PointF R = new PointF(O.x + radius1 * cosA * 0.44f - radius1 * sinA * 0.55f, O.y + radius1 * sinA * 0.44f + radius1 * cosA * 0.55f);
-        PointF S = new PointF(O.x - radius1 * cosA * 0.44f - radius1 * sinA * 0.55f, O.y - radius1 * sinA * 0.44f + radius1 * cosA * 0.55f);
-
-        // Drawing transparent circle
-        paint.setStrokeWidth(0);
-        paint.setColor(circleColor);
-      //  canvas.drawCircle(O.x, O.y, radius, paint);
-
-        // Drawing solid circle
-        paint.setColor(solidColor);
-      //  canvas.drawCircle(O.x, O.y, radius1, paint);
-
-        if (ORIENTATION_ENABLED)
-        {
-          // Drawing arrow
-          paint.setColor(arrowColor);
-          Path path = new Path();
-          path.moveTo(Q.x, Q.y);
-          path.lineTo(R.x, R.y);
-          path.lineTo(P.x, P.y);
-          path.lineTo(S.x, S.y);
-          path.lineTo(Q.x, Q.y);
-      //    canvas.drawPath(path, paint);
+        catch (RuntimeException e) {
+            Log.d("NavigineSDK", "BLUETOOTH ERROR" + e.getMessage());
         }
-      }
+    }
 
-      private void adjustDevice()
-      {
-        Log.d(TAG, "adjustDevice()");
-
-        // Check if location is loaded
-        if (mLocation == null || mCurrentSubLocationIndex < 0)
-          return;
-
-        // Check if navigation is available
-        if (mDeviceInfo == null || !mDeviceInfo.isValid())
-          return;
-
-        long timeNow = System.currentTimeMillis();
-
-        // Adjust map, if necessary
-        if (timeNow >= mAdjustTime)
-        {
-          // Firstly, set the correct sublocation
-          SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
-          if (mDeviceInfo.getSubLocationId() != subLoc.getId())
-          {
-            for(int i = 0; i < mLocation.getSubLocations().size(); ++i)
-              if (mLocation.getSubLocations().get(i).getId() == mDeviceInfo.getSubLocationId())
-                loadSubLocation(i);
-          }
-
-          // Secondly, adjust device to the center of the screen
-          PointF center = mLocationView.getScreenCoordinates(mDeviceInfo.getX(), mDeviceInfo.getY());
-          float deltaX  = mLocationView.getWidth()  / 2 - center.x;
-          float deltaY  = mLocationView.getHeight() / 2 - center.y;
-          mAdjustTime   = timeNow;
-          mLocationView.scrollBy(deltaX, deltaY);
-        }
-      }
-
-      private void showDirections(RoutePath path)
-      {
-        switch (path.getEvents().get(0).getType())
-        {
-          case RouteEvent.TURN_LEFT:
-            //mDirectionImageView.setBackgroundResource(R.drawable.ic_left);
-            break;
-          case RouteEvent.TURN_RIGHT:
-            //mDirectionImageView.setBackgroundResource(R.drawable.ic_right);
-            break;
-          case RouteEvent.TRANSITION:
-            //mDirectionImageView.setBackgroundResource(R.drawable.ic_escalator);
-            break;
-        }
-        //float nextTurnDistance = Math.max(path.getEvents().get(0).getDistance(), 1);
-        //mDirectionTextView.setText(String.format(Locale.ENGLISH,"%.0f m", nextTurnDistance));
-        //mDirectionLayout.setVisibility(View.VISIBLE);
-      }
-
-      private String getLogFile(String extension)
-      {
-        try
-        {
-          final String extDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getAbsolutePath() + "/Navigine.Demo";
-          (new File(extDir)).mkdirs();
-          if (!(new File(extDir)).exists())
-            return null;
-
-          Calendar calendar = Calendar.getInstance();
-          calendar.setTimeInMillis(System.currentTimeMillis());
-
-          return String.format(Locale.ENGLISH, "%s/%04d%02d%02d_%02d%02d%02d.%s", extDir,
-                               calendar.get(Calendar.YEAR),
-                               calendar.get(Calendar.MONTH) + 1,
-                               calendar.get(Calendar.DAY_OF_MONTH),
-                               calendar.get(Calendar.HOUR_OF_DAY),
-                               calendar.get(Calendar.MINUTE),
-                               calendar.get(Calendar.SECOND),
-                               extension);
-        }
-        catch (Throwable e)
-        {
-          return null;
-        }
-      }
 }

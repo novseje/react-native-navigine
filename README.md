@@ -29,37 +29,56 @@ Join NavigineFramework to node module in XCode.
 Note: After every "pod install" command, you need to set this checkbox again.
 
 ### Install for Android
+
+Download `libnavigine` lib directory from Navigine repositories folder.
+https://github.com/Navigine/Indoor-Navigation-Android-Mobile-SDK-2.0
+
+Put this directory in `android` directory in your project directory.
+
+Add code in android/settings.gradle file:
+```
+include ':libnavigine'
+```
+
+Add code in android/app/build.gradle file:
+```
+android {
+    ...
+    packagingOptions {
+        pickFirst '**/*.so'
+    }
+}
+```
+
 Declare a broadcast receiver and job scheduler service for scanning BLE devices in Android versions >= 26.
 Add this code to file android/app/src/main/AndroidManifest.xml
 ```xml
 <application>
   ...
-    <service android:name="com.navigine.naviginesdk.NavigineJobService"
-        android:permission="android.permission.BIND_JOB_SERVICE"
-        android:exported="false"
-        android:enabled="true"/>
-
-    <receiver android:name="com.navigine.naviginesdk.BLEBroadcastReceiver"
+    <service
+        android:name="com.reactnativenavigine.NotificationService"
+        android:process=":remote"
         android:enabled="true"
-        android:exported="true"
-        android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
-        <intent-filter>
-            <action android:name="android.intent.action.BOOT_COMPLETED"/>
-        </intent-filter>
-    </receiver>
+        android:exported="false"
+        android:stopWithTask="false"
+        android:foregroundServiceType="location">
+    </service>
 </application>
 ```
 
 And set permissions:
 ```
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+      <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+      <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+      <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+      <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+      <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+      <uses-permission android:name="android.permission.BLUETOOTH"/>
+      <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+      <uses-permission android:name="android.permission.INTERNET"/>
+      <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+      <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+      <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 ```
 
 ## Usage
