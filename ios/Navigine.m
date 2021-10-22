@@ -1,25 +1,18 @@
 #import <React/RCTBridgeModule.h>
+#import <navigine.h>
 
 #define DEBUG_LOG YES
 
-@implementation Navigine
-
-static NSString* API_KEY; // personal security key in the profile
-static NSString* API_SERVER = @"https://api.navigine.com"; // API server
-
-RCT_EXPORT_MODULE(Navigine)
+@interface RCT_EXTERN_MODULE(Navigine, NSObject)
 
 RCT_EXPORT_METHOD(setApiKey:(NSString *)apiKey callback:(RCTResponseSenderBlock)callback)
 {
     if(DEBUG_LOG) NSLog( @"[CALL] setApiKey: %@", apiKey );
 
-    callback(@"OK");
+    callback(@[@"OK"]);
 }
 
-RCT_EXPORT_METHOD(init:(NSString *)apiKey locationId:(NSInteger)locationId callback:(RCTResponseSenderBlock)callback)
-{
-
-}
+RCT_EXTERN_METHOD(init:(NSString *)apiKey locationId:(NSInteger)locationId callback:(RCTResponseSenderBlock)callback)
 
 RCT_EXPORT_METHOD(getFloorImage: (RCTResponseSenderBlock)callback)
 {
