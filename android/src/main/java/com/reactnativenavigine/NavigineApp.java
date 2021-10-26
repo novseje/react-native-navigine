@@ -94,9 +94,14 @@ public class NavigineApp extends Application implements LifecycleObserver {
         try {
             NavigineSdk.setUserHash(UserHash);
             NavigineSdk.setServer(LocationServer);
-            mNavigineSdk = NavigineSdk.getInstance();
+            NavigineApp.mNavigineSdk = NavigineSdk.getInstance();
+          if (NavigineApp.mNavigineSdk == null)
+          {
+            Log.d("NavigineApp", "NavigineApp.mNavigineSdk is null ");
+            return false;
+          }
             LocationListManager = mNavigineSdk.getLocationListManager();
-//>>>>>>>>            LocationManager = mNavigineSdk.getLocationManager();
+            LocationManager = mNavigineSdk.getLocationManager();
             //ResourceManager = mNavigineSdk.getResourceManager(LocationManager);
             //NavigationManager = mNavigineSdk.getNavigationManager(LocationManager);
             MeasurementManager = mNavigineSdk.getMeasurementManager();

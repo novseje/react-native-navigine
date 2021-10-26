@@ -80,45 +80,16 @@ import java.util.ArrayList;
 
 @ReactModule(name = NavigineModule.NAME)
 public class NavigineModule extends ReactContextBaseJavaModule {
-  public static final String NAME = "Navigine";
+    public static final String NAME = "Navigine";
 
-  private final ReactApplicationContext mContext;
+    private final ReactApplicationContext mContext;
 
       private static final String   TAG                     = "NAVIGINE.Demo";
-      private static final String   NOTIFICATION_CHANNEL    = "NAVIGINE_DEMO_NOTIFICATION_CHANNEL";
-      private static final int      UPDATE_TIMEOUT          = 100;  // milliseconds
-      private static final int      ADJUST_TIMEOUT          = 5000; // milliseconds
-      private static final int      ERROR_MESSAGE_TIMEOUT   = 5000; // milliseconds
-      private static final boolean  ORIENTATION_ENABLED     = true; // Show device orientation?
-      private static final boolean  NOTIFICATIONS_ENABLED   = true; // Show zone notifications?
-
-      private View          mBackView                 = null;
-      private TextView      mErrorMessageLabel        = null;
-      private float         mDisplayDensity           = 0.0f;
-
-      private boolean       mAdjustMode               = false;
-      private long          mAdjustTime               = 0;
-
-      // Location parameters
-      private int           mCurrentSubLocationIndex  = -1;
-
-      // Device parameters
-      private RectF         mPinPointRect             = null;
-
-      private RelativeLayout mDirectionLayout         = null;
-      private TextView       mDirectionTextView       = null;
-      private ImageView      mDirectionImageView      = null;
-
-      private Bitmap  mVenueBitmap    = null;
-      private RectF   mSelectedVenueRect = null;
-
       private boolean DEBUG_LOG = true;
       private String API_KEY;
       private String API_SERVER = "https://api.navigine.com"; // API server
       private int LOCATION_ID;
-      private Callback       initCallback   = null;
 
-      //private ArrayList<Zone> zonesCollect = new ArrayList<Zone>();
 
 
     public NavigineModule(ReactApplicationContext reactContext) {
@@ -150,16 +121,22 @@ public class NavigineModule extends ReactContextBaseJavaModule {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE}, 225);
 
-      verifyBluetooth();
+      ///verifyBluetooth();
+
+      String packageName = activity.getPackageName();
+      PowerManager pm = (PowerManager) activity.getSystemService(Context.POWER_SERVICE);
+      if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+        Intent intent = new Intent();
+        intent.setAction(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+        intent.setData(Uri.parse("package:" + packageName));
+        activity.startActivity(intent);
+      }
 
       initNavigineSDK();
 
       NavigineApp.UserHash = apiKey;
       NavigineApp.initializeSdk();
 
-      mCurrentSubLocationIndex = 0;
-
-      initCallback = callback;
     }
 
     @ReactMethod
@@ -233,7 +210,7 @@ public class NavigineModule extends ReactContextBaseJavaModule {
         if (DEBUG_LOG) Log.d(TAG, "initNavigineSDK()");
 
         NavigineApp.createInstance(this.mContext.getApplicationContext());
-        Intent i = new Intent(this.mContext.getApplicationContext(), com.reactnativenavigine.NotificationService.class);
+        Intent i = new Intent(this.mContext.getApplicationContext(), NotificationService.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Log.d("NavigineSDK", "startForegroundService()>>");
           this.mContext.getApplicationContext().startForegroundService(i);

@@ -38,7 +38,7 @@ public class NotificationService extends Service {
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         String channelId = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? createNotificationChannel(notificationManager) : "";
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, channelId);
-        Intent mainIntent = new Intent(this, MainActivity.class);
+        Intent mainIntent = new Intent(this, NavigineApp.class);
 
         PendingIntent mainPendingIntent = PendingIntent.getActivity(this, 0, mainIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
