@@ -132,17 +132,26 @@ public class NavigineModule extends ReactContextBaseJavaModule {
         activity.startActivity(intent);
       }
 
-      initNavigineSDK();
 
-      NavigineApp.UserHash = apiKey;
-      NavigineApp.initializeSdk();
+      // Get a handler that can be used to post to the main thread
+      Handler mainHandler = new Handler(mContext.getMainLooper());
+      Runnable myRunnable = new Runnable() {
+        @Override
+        public void run() {
+          initNavigineSDK();
+          NavigineApp.UserHash = apiKey;
+          NavigineApp.LocationId = locationId;
+          NavigineApp.initializeSdk();
+        }
+      };
+      mainHandler.post(myRunnable);
 
     }
 
     @ReactMethod
     public void getFloorImage(Callback callback) {
       if (DEBUG_LOG) Log.d(TAG, "getFloorImage()");
-
+      NavigineApp.initializeSdk();
       callback.invoke("");
       return;
 /*

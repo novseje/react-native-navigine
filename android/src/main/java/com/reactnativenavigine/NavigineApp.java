@@ -18,6 +18,8 @@ import com.navigine.idl.java.Image;
 import com.navigine.idl.java.LocationEditManager;
 import com.navigine.idl.java.LocationListManager;
 import com.navigine.idl.java.LocationManager;
+import com.navigine.idl.java.LocationListener;
+import com.navigine.idl.java.Location;
 import com.navigine.idl.java.MeasurementManager;
 import com.navigine.idl.java.NavigationManager;
 import com.navigine.idl.java.Notification;
@@ -28,6 +30,7 @@ import com.navigine.idl.java.Polygon;
 import com.navigine.idl.java.Position;
 import com.navigine.idl.java.PositionListener;
 import com.navigine.idl.java.ResourceManager;
+import com.navigine.idl.java.ResourceListener;
 import com.navigine.idl.java.RouteManager;
 import com.navigine.idl.java.SensorMeasurement;
 import com.navigine.idl.java.SignalMeasurement;
@@ -95,24 +98,77 @@ public class NavigineApp extends Application implements LifecycleObserver {
             NavigineSdk.setUserHash(UserHash);
             NavigineSdk.setServer(LocationServer);
             NavigineApp.mNavigineSdk = NavigineSdk.getInstance();
-          if (NavigineApp.mNavigineSdk == null)
-          {
-            Log.d("NavigineApp", "NavigineApp.mNavigineSdk is null ");
-            return false;
-          }
+
+            if (NavigineApp.mNavigineSdk == null)
+            {
+              Log.d("NavigineApp", "NavigineApp.mNavigineSdk is null ");
+              return false;
+            }
+
             LocationListManager = mNavigineSdk.getLocationListManager();
             LocationManager = mNavigineSdk.getLocationManager();
-            //ResourceManager = mNavigineSdk.getResourceManager(LocationManager);
-            //NavigationManager = mNavigineSdk.getNavigationManager(LocationManager);
+            ResourceManager = mNavigineSdk.getResourceManager(LocationManager);
+            NavigationManager = mNavigineSdk.getNavigationManager(LocationManager);
             MeasurementManager = mNavigineSdk.getMeasurementManager();
-            //RouteManager = mNavigineSdk.getRouteManager(LocationManager, NavigationManager);
-            //NotificationManager = mNavigineSdk.getNotificationManager(LocationManager);
+            RouteManager = mNavigineSdk.getRouteManager(LocationManager, NavigationManager);
+            NotificationManager = mNavigineSdk.getNotificationManager(LocationManager);
+
+            LocationManager.addLocationListener(new LocationListener() {
+              @Override
+              public void onLocationLoaded(Location location) {
+                Log.d("NavigineApp", "onLocationLoaded()");
+              }
+
+              @Override
+              public void onDownloadProgress(int progress, int total) {
+                Log.d("NavigineApp", "onDownloadProgress [ "+progress+"/"+total+" ]");
+              }
+
+              @Override
+              public void onLocationFailed(Error error) {
+                Log.d("NavigineApp", "onLocationFailed()");
+              }
+            });
+            LocationManager.setLocationId(LocationId);
+
+            NavigationManager.addPositionListener(new PositionListener() {
+              @Override
+              public void onPositionUpdated(Position position) {
+                Log.d("NavigineApp", "onPositionUpdated()");
+              }
+
+              @Override
+              public void onPositionError(Error error) {
+                Log.d("NavigineApp", "onPositionError(). Message:" + error.getMessage());
+              }
+            });
+
         } catch (Exception e) {
             Log.d("NavigineApp", "ERROR: " + e.getMessage());
             return false;
         }
         return true;
     }
+
+  public static boolean getMapImage()
+  {
+    //Location.getSublocations();
+    //Location.getSublocationById();
+    //Sublocation.getImageId();
+
+    String imageId = "9999";
+    ResourceManager.loadImage(imageId, new ResourceListener() {
+      @Override
+      public void onLoaded(String imageId, Image image) {
+        Log.d("NavigineApp", "onLoaded()");
+      }
+      @Override
+      public void onFailed(String imageId, Error error) {
+        Log.d("NavigineApp", "onFailed(). Message:" + error.getMessage());
+      }
+    });
+
+  }
 
     @Override
     public void onCreate() {
