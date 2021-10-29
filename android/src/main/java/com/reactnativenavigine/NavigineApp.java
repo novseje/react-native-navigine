@@ -6,35 +6,31 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
 import androidx.lifecycle.ProcessLifecycleOwner;
 
-import com.navigine.idl.java.BitmapRegionDecoder;
+import com.facebook.react.bridge.Callback;
 import com.navigine.idl.java.Image;
-import com.navigine.idl.java.LocationEditManager;
 import com.navigine.idl.java.LocationListManager;
 import com.navigine.idl.java.LocationManager;
 import com.navigine.idl.java.LocationListener;
 import com.navigine.idl.java.Location;
+import com.navigine.idl.java.Sublocation;
 import com.navigine.idl.java.MeasurementManager;
 import com.navigine.idl.java.NavigationManager;
-import com.navigine.idl.java.Notification;
-import com.navigine.idl.java.NotificationListener;
 import com.navigine.idl.java.NotificationManager;
 import com.navigine.idl.java.NavigineSdk;
-import com.navigine.idl.java.Polygon;
 import com.navigine.idl.java.Position;
 import com.navigine.idl.java.PositionListener;
 import com.navigine.idl.java.ResourceManager;
 import com.navigine.idl.java.ResourceListener;
 import com.navigine.idl.java.RouteManager;
-import com.navigine.idl.java.SensorMeasurement;
-import com.navigine.idl.java.SignalMeasurement;
 import com.navigine.sdk.Navigine;
+
+import java.util.ArrayList;
 
 public class NavigineApp extends Application implements LifecycleObserver {
     private String TAG = "DEMO";
@@ -68,6 +64,11 @@ public class NavigineApp extends Application implements LifecycleObserver {
     public static MeasurementManager  MeasurementManager  = null;
     public static RouteManager        RouteManager        = null;
 
+    public static Location CurrentLocation = null;
+    public static Sublocation CurrentSublocation = null;
+    public static Image CurrentImage = null;
+    //private ArrayList<Zone> zonesCollect = new ArrayList<Zone>();
+
     public static int LocationId = 0;
 
     public synchronized static void createInstance(Context context)
@@ -90,10 +91,13 @@ public class NavigineApp extends Application implements LifecycleObserver {
         DisplayHeightDp = DisplayHeightPx / DisplayDensity;
     }
 
-    public synchronized static boolean initializeSdk()
+    public synchronized static boolean initializeSdk(Callback callback)
     {
         Log.d("NavigineApp", "initializeSdk()");
         Log.d("NavigineApp", "UserHash: " + UserHash);
+
+        Callback initCallback = callback;
+
         try {
             NavigineSdk.setUserHash(UserHash);
             NavigineSdk.setServer(LocationServer);
@@ -117,6 +121,39 @@ public class NavigineApp extends Application implements LifecycleObserver {
               @Override
               public void onLocationLoaded(Location location) {
                 Log.d("NavigineApp", "onLocationLoaded()");
+                CurrentLocation = location;
+
+                ArrayList<Sublocation> SublocationsList = CurrentLocation.getSublocations();
+
+                for(int j = 0; j < SublocationsList.size(); j++)
+                {
+                  Log.d("==DEBUG==", "Sublocation: " + String.valueOf(SublocationsList.get(j).getName()));
+
+                  //
+                  // TODO: Get true current sublocation
+                  //
+                  CurrentSublocation = SublocationsList.get(j);
+                  break;
+                }
+
+                if (CurrentSublocation != null) {
+                  String imageId = CurrentSublocation.getImageId();
+
+                  ResourceManager.loadImage(imageId, new ResourceListener() {
+                    @Override
+                    public void onLoaded(String imageId, Image image) {
+                      Log.d("NavigineApp", "onLoaded()");
+                      CurrentImage = image;
+
+                      Log.d("NavigineApp", "init() callback");
+                      initCallback.invoke("init()");
+                    }
+                    @Override
+                    public void onFailed(String imageId, Error error) {
+                      Log.d("NavigineApp", "onFailed(). Message:" + error.getMessage());
+                    }
+                  });
+                }
               }
 
               @Override
@@ -147,27 +184,36 @@ public class NavigineApp extends Application implements LifecycleObserver {
             Log.d("NavigineApp", "ERROR: " + e.getMessage());
             return false;
         }
+        Log.d("NavigineApp", "initializeSdk() ==END==");
+
         return true;
     }
 
-  public static boolean getMapImage()
+  public static byte[] getMapImage()
   {
-    //Location.getSublocations();
-    //Location.getSublocationById();
-    //Sublocation.getImageId();
+    if (CurrentImage != null) {
+      // https://github.com/Navigine/Indoor-Navigation-Android-Mobile-SDK-2.0/wiki/Class-Image#function-getdata
+      return CurrentImage.getData();
+    }
+    return new byte[0];
+  }
 
-    String imageId = "9999";
-    ResourceManager.loadImage(imageId, new ResourceListener() {
-      @Override
-      public void onLoaded(String imageId, Image image) {
-        Log.d("NavigineApp", "onLoaded()");
-      }
-      @Override
-      public void onFailed(String imageId, Error error) {
-        Log.d("NavigineApp", "onFailed(). Message:" + error.getMessage());
-      }
-    });
+  public static int getMapImageWidth()
+  {
+    if (CurrentImage != null) {
+      // https://github.com/Navigine/Indoor-Navigation-Android-Mobile-SDK-2.0/wiki/Class-Image#function-getwidth
+      return CurrentImage.getWidth();
+    }
+    return 0;
+  }
 
+  public static int getMapImageHeight()
+  {
+    if (CurrentImage != null) {
+      // https://github.com/Navigine/Indoor-Navigation-Android-Mobile-SDK-2.0/wiki/Class-Image#function-getheight
+      return CurrentImage.getHeight();
+    }
+    return 0;
   }
 
     @Override

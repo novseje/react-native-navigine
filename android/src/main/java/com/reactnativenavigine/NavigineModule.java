@@ -90,7 +90,7 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       private String API_SERVER = "https://api.navigine.com"; // API server
       private int LOCATION_ID;
 
-
+      private Callback initCallback = null;
 
     public NavigineModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -107,6 +107,8 @@ public class NavigineModule extends ReactContextBaseJavaModule {
     public void init(String apiKey, int locationId, Callback callback) {
         API_KEY = apiKey;
         LOCATION_ID = locationId;
+
+        initCallback = callback;
 
       final Activity activity = getCurrentActivity();
 
@@ -141,7 +143,7 @@ public class NavigineModule extends ReactContextBaseJavaModule {
           initNavigineSDK();
           NavigineApp.UserHash = apiKey;
           NavigineApp.LocationId = locationId;
-          NavigineApp.initializeSdk();
+          NavigineApp.initializeSdk(initCallback);
         }
       };
       mainHandler.post(myRunnable);
@@ -151,17 +153,19 @@ public class NavigineModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void getFloorImage(Callback callback) {
       if (DEBUG_LOG) Log.d(TAG, "getFloorImage()");
-      NavigineApp.initializeSdk();
-      callback.invoke("");
-      return;
-/*
-      SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
-      if (DEBUG_LOG) Log.d(TAG, "Image:" + subLoc.getImage());
 
-      String encodedFile = new String(Base64.getEncoder().encode(subLoc.getImage().getData()));
-
+      byte[] image = NavigineApp.getMapImage();
+      String encodedFile = new String(Base64.getEncoder().encode(image));
       callback.invoke(encodedFile);
- */
+    }
+
+    @ReactMethod
+    public void getFloorImageSizes(Callback callback) {
+      if (DEBUG_LOG) Log.d(TAG, "getFloorImageSizes()");
+
+      int width = NavigineApp.getMapImageWidth();
+      int height = NavigineApp.getMapImageHeight();
+      callback.invoke(width + "|" + height);
     }
 
     @ReactMethod
@@ -176,13 +180,6 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       if (DEBUG_LOG) Log.d(TAG, "getAzimuth()");
 
       callback.invoke(0);
-    }
-
-    @ReactMethod
-    public void getFloorImageSizes(Callback callback) {
-      if (DEBUG_LOG) Log.d(TAG, "getFloorImageSizes()");
-
-      callback.invoke(100 + "|" + 200);
     }
 
     @ReactMethod
@@ -231,19 +228,7 @@ public class NavigineModule extends ReactContextBaseJavaModule {
 
     private void verifyBluetooth() {
         try {
-            BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-            if (bluetoothAdapter == null) {
-                // Device doesn't support Bluetooth
-                Log.d("NavigineSDK", "NO BLUETOOTH ==1==");
-            }
-
-            if (!bluetoothAdapter.isEnabled()) {
-                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            }
-
-            if (!((BluetoothManager) this.mContext.getSystemService("bluetooth")).getAdapter().isEnabled()) {
-                Log.d("NavigineSDK", "NO BLUETOOTH");
-            }
+            ;
         }
         catch (RuntimeException e) {
             Log.d("NavigineSDK", "BLUETOOTH ERROR" + e.getMessage());
