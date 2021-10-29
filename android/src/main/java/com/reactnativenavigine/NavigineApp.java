@@ -18,6 +18,7 @@ import com.navigine.idl.java.LocationListManager;
 import com.navigine.idl.java.LocationManager;
 import com.navigine.idl.java.LocationListener;
 import com.navigine.idl.java.Location;
+import com.navigine.idl.java.Point;
 import com.navigine.idl.java.Sublocation;
 import com.navigine.idl.java.MeasurementManager;
 import com.navigine.idl.java.NavigationManager;
@@ -67,6 +68,7 @@ public class NavigineApp extends Application implements LifecycleObserver {
     public static Location CurrentLocation = null;
     public static Sublocation CurrentSublocation = null;
     public static Image CurrentImage = null;
+    public static Position CurrentPosition = null;
     //private ArrayList<Zone> zonesCollect = new ArrayList<Zone>();
 
     public static int LocationId = 0;
@@ -172,6 +174,7 @@ public class NavigineApp extends Application implements LifecycleObserver {
               @Override
               public void onPositionUpdated(Position position) {
                 Log.d("NavigineApp", "onPositionUpdated()");
+                CurrentPosition = position;
               }
 
               @Override
@@ -212,6 +215,42 @@ public class NavigineApp extends Application implements LifecycleObserver {
     if (CurrentImage != null) {
       // https://github.com/Navigine/Indoor-Navigation-Android-Mobile-SDK-2.0/wiki/Class-Image#function-getheight
       return CurrentImage.getHeight();
+    }
+    return 0;
+  }
+
+  public static float getAzimuth()
+  {
+    if (CurrentSublocation != null) {
+      // https://github.com/Navigine/Indoor-Navigation-Android-Mobile-SDK-2.0/wiki/Class-Sublocation#function-getazimuth
+      return CurrentSublocation.getAzimuth();
+    }
+    return 0;
+  }
+
+  public static Point getCurPosition()
+  {
+    if (CurrentPosition != null) {
+      // https://github.com/Navigine/Indoor-Navigation-Android-Mobile-SDK-2.0/wiki/Class-Position#function-getpoint
+      return CurrentPosition.getPoint();
+    }
+    return new Point(0,0);
+  }
+
+  public static float getCurSublocationWidth()
+  {
+    if (CurrentSublocation != null) {
+      // https://github.com/Navigine/Indoor-Navigation-Android-Mobile-SDK-2.0/wiki/Class-Sublocation#function-getwidth
+      return CurrentSublocation.getWidth();
+    }
+    return 0;
+  }
+
+  public static float getCurSublocationHeight()
+  {
+    if (CurrentSublocation != null) {
+      // https://github.com/Navigine/Indoor-Navigation-Android-Mobile-SDK-2.0/wiki/Class-Sublocation#function-getheight
+      return CurrentSublocation.getHeight();
     }
     return 0;
   }

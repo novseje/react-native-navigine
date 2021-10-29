@@ -11,6 +11,7 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactContext;
+import com.navigine.idl.java.Point;
 
 import android.Manifest;
 import android.app.*;
@@ -168,18 +169,45 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       callback.invoke(width + "|" + height);
     }
 
+    // Return current position in pixels
     @ReactMethod
     public void getCurPosition(Callback callback) {
       if (DEBUG_LOG) Log.d(TAG, "getCurPosition()");
 
-      callback.invoke(10 + "|" + 20);
+      float posX = 0;
+      float posY = 0;
+
+      float mapWidth = NavigineApp.getCurSublocationWidth(); // location width in meters
+      float mapHeight = NavigineApp.getCurSublocationHeight(); // location height in meters
+      if (DEBUG_LOG) Log.d(TAG, "MapSize: : " + mapWidth + "/" + mapHeight);
+
+      int imageWidth = NavigineApp.getMapImageWidth(); // map image width in pixels
+      int imageHeight = NavigineApp.getMapImageHeight(); // map image height in pixels
+      if (DEBUG_LOG) Log.d(TAG, "ImageSize: : " + imageWidth + "/" + imageHeight);
+
+      if (mapWidth > 0 && mapHeight > 0 && imageWidth > 0 && imageHeight > 0) {
+        Point point = NavigineApp.getCurPosition();
+
+        float width1m = imageWidth / mapWidth; // pixels in 1 meter of width
+        float height1m = imageHeight / mapHeight; // pixels in 1 meter of height
+        if (DEBUG_LOG) Log.d(TAG, "pixelsIn1m: : " + width1m + "/" + height1m);
+
+        posX = point.getX() * width1m;
+        posY = imageHeight - (point.getY() * height1m);
+      }
+
+      callback.invoke( posX + "|" + posY);
+      if (DEBUG_LOG) Log.d(TAG, "CurPosition: " + posX + "/" + posY);
     }
 
+    // Return current azimuth in degrees
     @ReactMethod
     public void getAzimuth(Callback callback) {
       if (DEBUG_LOG) Log.d(TAG, "getAzimuth()");
 
-      callback.invoke(0);
+      float azimuth = NavigineApp.getAzimuth();
+      callback.invoke(azimuth);
+      if (DEBUG_LOG) Log.d(TAG, "Azimuth: " + azimuth);
     }
 
     @ReactMethod
