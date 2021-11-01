@@ -36,6 +36,7 @@ import com.navigine.sdk.Navigine;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class NavigineApp extends Application implements LifecycleObserver {
     private String TAG = "DEMO";
@@ -184,7 +185,7 @@ public class NavigineApp extends Application implements LifecycleObserver {
 
               @Override
               public void onPositionError(Error error) {
-                Log.d("NavigineApp", "onPositionError(). Message:" + error.getMessage());
+                Log.d("NavigineApp", "onPositionError(). Message: " + error.getMessage());
               }
             });
 
@@ -194,7 +195,7 @@ public class NavigineApp extends Application implements LifecycleObserver {
                 Log.d("NavigineApp", "onPathsUpdated().");
                 CurrentRoutePaths = routePaths;
               }
-          });
+            });
 
         } catch (Exception e) {
             Log.d("NavigineApp", "ERROR: " + e.getMessage());
@@ -244,6 +245,7 @@ public class NavigineApp extends Application implements LifecycleObserver {
   public static Point getCurPosition()
   {
     if (CurrentPosition != null) {
+      Log.d("NavigineApp", "getCurPosition(): " + String.valueOf(CurrentPosition.getPoint()));
       // https://github.com/Navigine/Indoor-Navigation-Android-Mobile-SDK-2.0/wiki/Class-Position#function-getpoint
       return CurrentPosition.getPoint();
     }
@@ -271,8 +273,15 @@ public class NavigineApp extends Application implements LifecycleObserver {
   public static void setRouteDestination(float x, float y)
   {
     if (CurrentLocation != null && CurrentSublocation != null) {
+      RouteManager.clearTargets();
+
       Point targetPoint = new Point(x, y);
-      LocationPoint targetLPoint = new LocationPoint(targetPoint, CurrentLocation.getId(), CurrentSublocation.getId());
+      int currentLocationId = CurrentLocation.getId();
+      int currentSublocationId = CurrentSublocation.getId();
+
+      Log.d("NavigineApp", String.format(Locale.ENGLISH, "setRouteDestination: x:%.2f, y:%.2f ON %d / %d)", x, y, currentLocationId, currentSublocationId));
+      LocationPoint targetLPoint = new LocationPoint(targetPoint, currentLocationId, currentSublocationId);
+      // https://github.com/Navigine/Indoor-Navigation-Android-Mobile-SDK-2.0/wiki/Class-RouteManager#function-settarget
       RouteManager.setTarget(targetLPoint);
     }
   }
@@ -287,15 +296,18 @@ public class NavigineApp extends Application implements LifecycleObserver {
       for (int j = 0; j < CurrentRoutePaths.size(); j++)
       {
         // https://github.com/Navigine/Indoor-Navigation-Android-Mobile-SDK-2.0/wiki/Class-RoutePath
-        Log.d("==DEBUG==", "RoutePath: " + String.valueOf(CurrentRoutePaths.get(j).getPoints()));
         RoutePath CurrentRoutePath = CurrentRoutePaths.get(j);
         ArrayList<LocationPoint> routePoints = CurrentRoutePath.getPoints();
+        Log.d("NavigineApp", "==DEBUG== RoutePath: " + String.valueOf(CurrentRoutePath.getPoints()));
+        Log.d("NavigineApp", "==DEBUG== RouteLength: " + String.valueOf(CurrentRoutePath.getLength()));
         for (int r = 0; r < routePoints.size(); r++)
         {
-          Point lPoint = routePoints.get(j).getPoint();
+          Point lPoint = routePoints.get(r).getPoint();
           // https://github.com/Navigine/Indoor-Navigation-Android-Mobile-SDK-2.0/wiki/Class-LocationPoint
           firstRoutePoints.add(lPoint);
-          Log.d("==DEBUG==", "routePoints: " + String.valueOf(lPoint));
+          Log.d("NavigineApp", "==DEBUG== routePoint: " + String.valueOf(lPoint));
+          Log.d("NavigineApp", String.format(Locale.ENGLISH, "==DEBUG== Location: %s, Sublocation: %s", routePoints.get(r).getLocationId(), routePoints.get(r).getSublocationId()));
+
         }
         break; // (!) only first route
       }

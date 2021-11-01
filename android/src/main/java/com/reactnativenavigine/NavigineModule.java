@@ -224,7 +224,7 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       ArrayList<Point> firstRoutePoints = NavigineApp.getFirstRoutePoints();
 
       int pointsSize = firstRoutePoints.size();
-      if (pointsSize > 2) {
+      if (pointsSize > 0) {
         float mapWidth = NavigineApp.getCurSublocationWidth(); // location width in meters
         float mapHeight = NavigineApp.getCurSublocationHeight(); // location height in meters
         if (DEBUG_LOG) Log.d(TAG, "MapSize: : " + mapWidth + "/" + mapHeight);
@@ -260,7 +260,22 @@ public class NavigineModule extends ReactContextBaseJavaModule {
     public void setRouteDestination(float x, float y, Callback callback) {
       if (DEBUG_LOG) Log.d(TAG, String.format(Locale.ENGLISH, "setRouteDestination: x:%.2f, y:%.2f)", x, y));
 
-      NavigineApp.setRouteDestination(5, 5);
+      float mapWidth = NavigineApp.getCurSublocationWidth(); // location width in meters
+      float mapHeight = NavigineApp.getCurSublocationHeight(); // location height in meters
+      if (DEBUG_LOG) Log.d(TAG, "MapSize: : " + mapWidth + "/" + mapHeight);
+
+      int imageWidth = NavigineApp.getMapImageWidth(); // map image width in pixels
+      int imageHeight = NavigineApp.getMapImageHeight(); // map image height in pixels
+      if (DEBUG_LOG) Log.d(TAG, "ImageSize: : " + imageWidth + "/" + imageHeight);
+
+      if (mapWidth > 0 && mapHeight > 0 && imageWidth > 0 && imageHeight > 0) {
+        float width1m = imageWidth / mapWidth; // pixels in 1 meter of width
+        float height1m = imageHeight / mapHeight; // pixels in 1 meter of height
+        if (DEBUG_LOG) Log.d(TAG, "pixelsIn1m: : " + width1m + "/" + height1m);
+
+        if (DEBUG_LOG) Log.d(TAG, String.format(Locale.ENGLISH, "setRouteDestination: x:%.2fm, y:%.2fm)", x / width1m, mapHeight - y / height1m));
+        NavigineApp.setRouteDestination(x / width1m, mapHeight - y / height1m);
+      }
 
       callback.invoke("OK");
     }
