@@ -11,6 +11,7 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactContext;
+import com.navigine.idl.java.Point;
 
 import android.Manifest;
 import android.app.*;
@@ -90,7 +91,7 @@ public class NavigineModule extends ReactContextBaseJavaModule {
       private String API_SERVER = "https://api.navigine.com"; // API server
       private int LOCATION_ID;
 
-
+      private Callback initCallback = null;
 
     public NavigineModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -107,6 +108,8 @@ public class NavigineModule extends ReactContextBaseJavaModule {
     public void init(String apiKey, int locationId, Callback callback) {
         API_KEY = apiKey;
         LOCATION_ID = locationId;
+
+        initCallback = callback;
 
       final Activity activity = getCurrentActivity();
 
@@ -132,10 +135,19 @@ public class NavigineModule extends ReactContextBaseJavaModule {
         activity.startActivity(intent);
       }
 
-      initNavigineSDK();
 
-      NavigineApp.UserHash = apiKey;
-      NavigineApp.initializeSdk();
+      // Get a handler that can be used to post to the main thread
+      Handler mainHandler = new Handler(mContext.getMainLooper());
+      Runnable myRunnable = new Runnable() {
+        @Override
+        public void run() {
+          initNavigineSDK();
+          NavigineApp.UserHash = apiKey;
+          NavigineApp.LocationId = locationId;
+          NavigineApp.initializeSdk(initCallback);
+        }
+      };
+      mainHandler.post(myRunnable);
 
     }
 
@@ -143,37 +155,59 @@ public class NavigineModule extends ReactContextBaseJavaModule {
     public void getFloorImage(Callback callback) {
       if (DEBUG_LOG) Log.d(TAG, "getFloorImage()");
 
-      callback.invoke("");
-      return;
-/*
-      SubLocation subLoc = mLocation.getSubLocations().get(mCurrentSubLocationIndex);
-      if (DEBUG_LOG) Log.d(TAG, "Image:" + subLoc.getImage());
-
-      String encodedFile = new String(Base64.getEncoder().encode(subLoc.getImage().getData()));
-
+      byte[] image = NavigineApp.getMapImage();
+      String encodedFile = new String(Base64.getEncoder().encode(image));
       callback.invoke(encodedFile);
- */
-    }
-
-    @ReactMethod
-    public void getCurPosition(Callback callback) {
-      if (DEBUG_LOG) Log.d(TAG, "getCurPosition()");
-
-      callback.invoke(10 + "|" + 20);
-    }
-
-    @ReactMethod
-    public void getAzimuth(Callback callback) {
-      if (DEBUG_LOG) Log.d(TAG, "getAzimuth()");
-
-      callback.invoke(0);
     }
 
     @ReactMethod
     public void getFloorImageSizes(Callback callback) {
       if (DEBUG_LOG) Log.d(TAG, "getFloorImageSizes()");
 
-      callback.invoke(100 + "|" + 200);
+      int width = NavigineApp.getMapImageWidth();
+      int height = NavigineApp.getMapImageHeight();
+      callback.invoke(width + "|" + height);
+    }
+
+    // Return current position in pixels
+    @ReactMethod
+    public void getCurPosition(Callback callback) {
+      if (DEBUG_LOG) Log.d(TAG, "getCurPosition()");
+
+      float posX = 0;
+      float posY = 0;
+
+      float mapWidth = NavigineApp.getCurSublocationWidth(); // location width in meters
+      float mapHeight = NavigineApp.getCurSublocationHeight(); // location height in meters
+      if (DEBUG_LOG) Log.d(TAG, "MapSize: : " + mapWidth + "/" + mapHeight);
+
+      int imageWidth = NavigineApp.getMapImageWidth(); // map image width in pixels
+      int imageHeight = NavigineApp.getMapImageHeight(); // map image height in pixels
+      if (DEBUG_LOG) Log.d(TAG, "ImageSize: : " + imageWidth + "/" + imageHeight);
+
+      if (mapWidth > 0 && mapHeight > 0 && imageWidth > 0 && imageHeight > 0) {
+        Point point = NavigineApp.getCurPosition();
+
+        float width1m = imageWidth / mapWidth; // pixels in 1 meter of width
+        float height1m = imageHeight / mapHeight; // pixels in 1 meter of height
+        if (DEBUG_LOG) Log.d(TAG, "pixelsIn1m: : " + width1m + "/" + height1m);
+
+        posX = point.getX() * width1m;
+        posY = imageHeight - (point.getY() * height1m);
+      }
+
+      callback.invoke( posX + "|" + posY);
+      if (DEBUG_LOG) Log.d(TAG, "CurPosition: " + posX + "/" + posY);
+    }
+
+    // Return current azimuth in degrees
+    @ReactMethod
+    public void getAzimuth(Callback callback) {
+      if (DEBUG_LOG) Log.d(TAG, "getAzimuth()");
+
+      float azimuth = NavigineApp.getAzimuth();
+      callback.invoke(azimuth);
+      if (DEBUG_LOG) Log.d(TAG, "Azimuth: " + azimuth);
     }
 
     @ReactMethod
@@ -187,12 +221,61 @@ public class NavigineModule extends ReactContextBaseJavaModule {
     public void getRoutePoints(Callback callback) {
       if (DEBUG_LOG) Log.d(TAG, "getRoutePoints()");
 
+      ArrayList<Point> firstRoutePoints = NavigineApp.getFirstRoutePoints();
+
+      int pointsSize = firstRoutePoints.size();
+      if (pointsSize > 0) {
+        float mapWidth = NavigineApp.getCurSublocationWidth(); // location width in meters
+        float mapHeight = NavigineApp.getCurSublocationHeight(); // location height in meters
+        if (DEBUG_LOG) Log.d(TAG, "MapSize: : " + mapWidth + "/" + mapHeight);
+
+        int imageWidth = NavigineApp.getMapImageWidth(); // map image width in pixels
+        int imageHeight = NavigineApp.getMapImageHeight(); // map image height in pixels
+        if (DEBUG_LOG) Log.d(TAG, "ImageSize: : " + imageWidth + "/" + imageHeight);
+
+        if (mapWidth > 0 && mapHeight > 0 && imageWidth > 0 && imageHeight > 0) {
+          float width1m = imageWidth / mapWidth; // pixels in 1 meter of width
+          float height1m = imageHeight / mapHeight; // pixels in 1 meter of height
+          if (DEBUG_LOG) Log.d(TAG, "pixelsIn1m: : " + width1m + "/" + height1m);
+
+          ArrayList<String> pointsArray = new ArrayList<String>();
+          for (int j = 0; j < pointsSize; j++) {
+            Point P = firstRoutePoints.get(j);
+            pointsArray.add("{\"x\": " + String.valueOf(P.getX() * width1m) + ", \"y\": " + String.valueOf(imageHeight - P.getY() * height1m) + "}");
+          }
+          String pointsString = "[";
+          for (String s : pointsArray) {
+            pointsString += s + ", ";
+          }
+          pointsString = pointsString.replaceAll(",\\s*$", "");
+          pointsString += "]";
+          callback.invoke(pointsString);
+          return;
+        }
+      }
       callback.invoke("[]");
     }
 
     @ReactMethod
     public void setRouteDestination(float x, float y, Callback callback) {
       if (DEBUG_LOG) Log.d(TAG, String.format(Locale.ENGLISH, "setRouteDestination: x:%.2f, y:%.2f)", x, y));
+
+      float mapWidth = NavigineApp.getCurSublocationWidth(); // location width in meters
+      float mapHeight = NavigineApp.getCurSublocationHeight(); // location height in meters
+      if (DEBUG_LOG) Log.d(TAG, "MapSize: : " + mapWidth + "/" + mapHeight);
+
+      int imageWidth = NavigineApp.getMapImageWidth(); // map image width in pixels
+      int imageHeight = NavigineApp.getMapImageHeight(); // map image height in pixels
+      if (DEBUG_LOG) Log.d(TAG, "ImageSize: : " + imageWidth + "/" + imageHeight);
+
+      if (mapWidth > 0 && mapHeight > 0 && imageWidth > 0 && imageHeight > 0) {
+        float width1m = imageWidth / mapWidth; // pixels in 1 meter of width
+        float height1m = imageHeight / mapHeight; // pixels in 1 meter of height
+        if (DEBUG_LOG) Log.d(TAG, "pixelsIn1m: : " + width1m + "/" + height1m);
+
+        if (DEBUG_LOG) Log.d(TAG, String.format(Locale.ENGLISH, "setRouteDestination: x:%.2fm, y:%.2fm)", x / width1m, mapHeight - y / height1m));
+        NavigineApp.setRouteDestination(x / width1m, mapHeight - y / height1m);
+      }
 
       callback.invoke("OK");
     }
@@ -222,19 +305,7 @@ public class NavigineModule extends ReactContextBaseJavaModule {
 
     private void verifyBluetooth() {
         try {
-            BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-            if (bluetoothAdapter == null) {
-                // Device doesn't support Bluetooth
-                Log.d("NavigineSDK", "NO BLUETOOTH ==1==");
-            }
-
-            if (!bluetoothAdapter.isEnabled()) {
-                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            }
-
-            if (!((BluetoothManager) this.mContext.getSystemService("bluetooth")).getAdapter().isEnabled()) {
-                Log.d("NavigineSDK", "NO BLUETOOTH");
-            }
+            ;
         }
         catch (RuntimeException e) {
             Log.d("NavigineSDK", "BLUETOOTH ERROR" + e.getMessage());

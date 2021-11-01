@@ -6,32 +6,37 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
 import androidx.lifecycle.ProcessLifecycleOwner;
 
-import com.navigine.idl.java.BitmapRegionDecoder;
+import com.facebook.react.bridge.Callback;
 import com.navigine.idl.java.Image;
-import com.navigine.idl.java.LocationEditManager;
 import com.navigine.idl.java.LocationListManager;
 import com.navigine.idl.java.LocationManager;
+import com.navigine.idl.java.LocationListener;
+import com.navigine.idl.java.Location;
+import com.navigine.idl.java.LocationPoint;
+import com.navigine.idl.java.Point;
+import com.navigine.idl.java.Sublocation;
 import com.navigine.idl.java.MeasurementManager;
 import com.navigine.idl.java.NavigationManager;
-import com.navigine.idl.java.Notification;
-import com.navigine.idl.java.NotificationListener;
 import com.navigine.idl.java.NotificationManager;
 import com.navigine.idl.java.NavigineSdk;
-import com.navigine.idl.java.Polygon;
 import com.navigine.idl.java.Position;
 import com.navigine.idl.java.PositionListener;
 import com.navigine.idl.java.ResourceManager;
+import com.navigine.idl.java.ResourceListener;
 import com.navigine.idl.java.RouteManager;
-import com.navigine.idl.java.SensorMeasurement;
-import com.navigine.idl.java.SignalMeasurement;
+import com.navigine.idl.java.RouteListener;
+import com.navigine.idl.java.RoutePath;
 import com.navigine.sdk.Navigine;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 public class NavigineApp extends Application implements LifecycleObserver {
     private String TAG = "DEMO";
@@ -65,6 +70,13 @@ public class NavigineApp extends Application implements LifecycleObserver {
     public static MeasurementManager  MeasurementManager  = null;
     public static RouteManager        RouteManager        = null;
 
+    public static Location CurrentLocation = null;
+    public static Sublocation CurrentSublocation = null;
+    public static Image CurrentImage = null;
+    public static Position CurrentPosition = null;
+    public static ArrayList<RoutePath> CurrentRoutePaths = null;
+    //private ArrayList<Zone> zonesCollect = new ArrayList<Zone>();
+
     public static int LocationId = 0;
 
     public synchronized static void createInstance(Context context)
@@ -87,32 +99,222 @@ public class NavigineApp extends Application implements LifecycleObserver {
         DisplayHeightDp = DisplayHeightPx / DisplayDensity;
     }
 
-    public synchronized static boolean initializeSdk()
+    public synchronized static boolean initializeSdk(Callback callback)
     {
         Log.d("NavigineApp", "initializeSdk()");
         Log.d("NavigineApp", "UserHash: " + UserHash);
+
+        Callback initCallback = callback;
+
         try {
             NavigineSdk.setUserHash(UserHash);
             NavigineSdk.setServer(LocationServer);
             NavigineApp.mNavigineSdk = NavigineSdk.getInstance();
-          if (NavigineApp.mNavigineSdk == null)
-          {
-            Log.d("NavigineApp", "NavigineApp.mNavigineSdk is null ");
-            return false;
-          }
+
+            if (NavigineApp.mNavigineSdk == null)
+            {
+              Log.d("NavigineApp", "NavigineApp.mNavigineSdk is null ");
+              return false;
+            }
+
             LocationListManager = mNavigineSdk.getLocationListManager();
             LocationManager = mNavigineSdk.getLocationManager();
-            //ResourceManager = mNavigineSdk.getResourceManager(LocationManager);
-            //NavigationManager = mNavigineSdk.getNavigationManager(LocationManager);
+            ResourceManager = mNavigineSdk.getResourceManager(LocationManager);
+            NavigationManager = mNavigineSdk.getNavigationManager(LocationManager);
             MeasurementManager = mNavigineSdk.getMeasurementManager();
-            //RouteManager = mNavigineSdk.getRouteManager(LocationManager, NavigationManager);
-            //NotificationManager = mNavigineSdk.getNotificationManager(LocationManager);
+            RouteManager = mNavigineSdk.getRouteManager(LocationManager, NavigationManager);
+            NotificationManager = mNavigineSdk.getNotificationManager(LocationManager);
+
+            LocationManager.addLocationListener(new LocationListener() {
+              @Override
+              public void onLocationLoaded(Location location) {
+                Log.d("NavigineApp", "onLocationLoaded()");
+                CurrentLocation = location;
+
+                ArrayList<Sublocation> SublocationsList = CurrentLocation.getSublocations();
+
+                for(int j = 0; j < SublocationsList.size(); j++)
+                {
+                  Log.d("==DEBUG==", "Sublocation: " + String.valueOf(SublocationsList.get(j).getName()));
+
+                  //
+                  // TODO: Get true current sublocation
+                  //
+                  CurrentSublocation = SublocationsList.get(j);
+                  break;
+                }
+
+                if (CurrentSublocation != null) {
+                  String imageId = CurrentSublocation.getImageId();
+
+                  ResourceManager.loadImage(imageId, new ResourceListener() {
+                    @Override
+                    public void onLoaded(String imageId, Image image) {
+                      Log.d("NavigineApp", "onLoaded()");
+                      CurrentImage = image;
+
+                      Log.d("NavigineApp", "init() callback");
+                      initCallback.invoke("init()");
+                    }
+                    @Override
+                    public void onFailed(String imageId, Error error) {
+                      Log.d("NavigineApp", "onFailed(). Message:" + error.getMessage());
+                    }
+                  });
+                }
+              }
+
+              @Override
+              public void onDownloadProgress(int progress, int total) {
+                Log.d("NavigineApp", "onDownloadProgress [ "+progress+"/"+total+" ]");
+              }
+
+              @Override
+              public void onLocationFailed(Error error) {
+                Log.d("NavigineApp", "onLocationFailed()");
+              }
+            });
+            LocationManager.setLocationId(LocationId);
+
+            NavigationManager.addPositionListener(new PositionListener() {
+              @Override
+              public void onPositionUpdated(Position position) {
+                Log.d("NavigineApp", "onPositionUpdated()");
+                CurrentPosition = position;
+              }
+
+              @Override
+              public void onPositionError(Error error) {
+                Log.d("NavigineApp", "onPositionError(). Message: " + error.getMessage());
+              }
+            });
+
+            RouteManager.addRouteListener(new RouteListener() {
+              @Override
+              public void onPathsUpdated(ArrayList<RoutePath> routePaths){
+                Log.d("NavigineApp", "onPathsUpdated().");
+                CurrentRoutePaths = routePaths;
+              }
+            });
+
         } catch (Exception e) {
             Log.d("NavigineApp", "ERROR: " + e.getMessage());
             return false;
         }
+        Log.d("NavigineApp", "initializeSdk() ==END==");
+
         return true;
     }
+
+  public static byte[] getMapImage()
+  {
+    if (CurrentImage != null) {
+      // https://github.com/Navigine/Indoor-Navigation-Android-Mobile-SDK-2.0/wiki/Class-Image#function-getdata
+      return CurrentImage.getData();
+    }
+    return new byte[0];
+  }
+
+  public static int getMapImageWidth()
+  {
+    if (CurrentImage != null) {
+      // https://github.com/Navigine/Indoor-Navigation-Android-Mobile-SDK-2.0/wiki/Class-Image#function-getwidth
+      return CurrentImage.getWidth();
+    }
+    return 0;
+  }
+
+  public static int getMapImageHeight()
+  {
+    if (CurrentImage != null) {
+      // https://github.com/Navigine/Indoor-Navigation-Android-Mobile-SDK-2.0/wiki/Class-Image#function-getheight
+      return CurrentImage.getHeight();
+    }
+    return 0;
+  }
+
+  public static float getAzimuth()
+  {
+    if (CurrentSublocation != null) {
+      // https://github.com/Navigine/Indoor-Navigation-Android-Mobile-SDK-2.0/wiki/Class-Sublocation#function-getazimuth
+      return CurrentSublocation.getAzimuth();
+    }
+    return 0;
+  }
+
+  public static Point getCurPosition()
+  {
+    if (CurrentPosition != null) {
+      Log.d("NavigineApp", "getCurPosition(): " + String.valueOf(CurrentPosition.getPoint()));
+      // https://github.com/Navigine/Indoor-Navigation-Android-Mobile-SDK-2.0/wiki/Class-Position#function-getpoint
+      return CurrentPosition.getPoint();
+    }
+    return new Point(0,0);
+  }
+
+  public static float getCurSublocationWidth()
+  {
+    if (CurrentSublocation != null) {
+      // https://github.com/Navigine/Indoor-Navigation-Android-Mobile-SDK-2.0/wiki/Class-Sublocation#function-getwidth
+      return CurrentSublocation.getWidth();
+    }
+    return 0;
+  }
+
+  public static float getCurSublocationHeight()
+  {
+    if (CurrentSublocation != null) {
+      // https://github.com/Navigine/Indoor-Navigation-Android-Mobile-SDK-2.0/wiki/Class-Sublocation#function-getheight
+      return CurrentSublocation.getHeight();
+    }
+    return 0;
+  }
+
+  public static void setRouteDestination(float x, float y)
+  {
+    if (CurrentLocation != null && CurrentSublocation != null) {
+      RouteManager.clearTargets();
+
+      Point targetPoint = new Point(x, y);
+      int currentLocationId = CurrentLocation.getId();
+      int currentSublocationId = CurrentSublocation.getId();
+
+      Log.d("NavigineApp", String.format(Locale.ENGLISH, "setRouteDestination: x:%.2f, y:%.2f ON %d / %d)", x, y, currentLocationId, currentSublocationId));
+      LocationPoint targetLPoint = new LocationPoint(targetPoint, currentLocationId, currentSublocationId);
+      // https://github.com/Navigine/Indoor-Navigation-Android-Mobile-SDK-2.0/wiki/Class-RouteManager#function-settarget
+      RouteManager.setTarget(targetLPoint);
+    }
+  }
+
+  public static ArrayList<Point> getFirstRoutePoints()
+  {
+    Log.d("NavigineApp", "getFirstRoutePoints()");
+
+    ArrayList<Point> firstRoutePoints = new ArrayList<>();
+
+    if (CurrentRoutePaths != null) {
+      for (int j = 0; j < CurrentRoutePaths.size(); j++)
+      {
+        // https://github.com/Navigine/Indoor-Navigation-Android-Mobile-SDK-2.0/wiki/Class-RoutePath
+        RoutePath CurrentRoutePath = CurrentRoutePaths.get(j);
+        ArrayList<LocationPoint> routePoints = CurrentRoutePath.getPoints();
+        Log.d("NavigineApp", "==DEBUG== RoutePath: " + String.valueOf(CurrentRoutePath.getPoints()));
+        Log.d("NavigineApp", "==DEBUG== RouteLength: " + String.valueOf(CurrentRoutePath.getLength()));
+        for (int r = 0; r < routePoints.size(); r++)
+        {
+          Point lPoint = routePoints.get(r).getPoint();
+          // https://github.com/Navigine/Indoor-Navigation-Android-Mobile-SDK-2.0/wiki/Class-LocationPoint
+          firstRoutePoints.add(lPoint);
+          Log.d("NavigineApp", "==DEBUG== routePoint: " + String.valueOf(lPoint));
+          Log.d("NavigineApp", String.format(Locale.ENGLISH, "==DEBUG== Location: %s, Sublocation: %s", routePoints.get(r).getLocationId(), routePoints.get(r).getSublocationId()));
+
+        }
+        break; // (!) only first route
+      }
+    }
+
+    return firstRoutePoints;
+  }
 
     @Override
     public void onCreate() {

@@ -31,7 +31,6 @@ import com.navigine.idl.java.Point;
 import com.navigine.idl.java.Position;
 import com.navigine.idl.java.PositionListener;
 import com.navigine.idl.java.Sublocation;
-import com.navigine.idl.java.MapObject;
 import com.navigine.view.TouchInput;
 import com.navigine.view.LocationView;
 //import com.navigine.view.internal.TouchInput;
@@ -56,8 +55,6 @@ public class NavigationFragment extends Fragment {
     BottomSheetBehavior mVenueBehavior;
 
     NotificationManager mNotificationManager = null;
-
-    MapObject mPosition = null;
 
     Button showBeacons;
     Button showEddys;
@@ -104,12 +101,10 @@ public class NavigationFragment extends Fragment {
             }
         });
 
-        mPosition = locationView.getLocationViewController().addMapObject();
-
         NavigineApp.NavigationManager.addPositionListener(new PositionListener() {
             @Override
             public void onPositionUpdated(Position position) {
-                mPosition.setPositionAnimated(position.getPoint(), 1.0f, AnimationType.CUBIC);
+                ;
             }
 
             @Override
