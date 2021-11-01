@@ -18,6 +18,7 @@ import com.navigine.idl.java.LocationListManager;
 import com.navigine.idl.java.LocationManager;
 import com.navigine.idl.java.LocationListener;
 import com.navigine.idl.java.Location;
+import com.navigine.idl.java.LocationPoint;
 import com.navigine.idl.java.Point;
 import com.navigine.idl.java.Sublocation;
 import com.navigine.idl.java.MeasurementManager;
@@ -29,9 +30,12 @@ import com.navigine.idl.java.PositionListener;
 import com.navigine.idl.java.ResourceManager;
 import com.navigine.idl.java.ResourceListener;
 import com.navigine.idl.java.RouteManager;
+import com.navigine.idl.java.RouteListener;
+import com.navigine.idl.java.RoutePath;
 import com.navigine.sdk.Navigine;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class NavigineApp extends Application implements LifecycleObserver {
     private String TAG = "DEMO";
@@ -69,6 +73,7 @@ public class NavigineApp extends Application implements LifecycleObserver {
     public static Sublocation CurrentSublocation = null;
     public static Image CurrentImage = null;
     public static Position CurrentPosition = null;
+    public static ArrayList<RoutePath> CurrentRoutePaths = null;
     //private ArrayList<Zone> zonesCollect = new ArrayList<Zone>();
 
     public static int LocationId = 0;
@@ -183,6 +188,14 @@ public class NavigineApp extends Application implements LifecycleObserver {
               }
             });
 
+            RouteManager.addRouteListener(new RouteListener() {
+              @Override
+              public void onPathsUpdated(ArrayList<RoutePath> routePaths){
+                Log.d("NavigineApp", "onPathsUpdated().");
+                CurrentRoutePaths = routePaths;
+              }
+          });
+
         } catch (Exception e) {
             Log.d("NavigineApp", "ERROR: " + e.getMessage());
             return false;
@@ -253,6 +266,42 @@ public class NavigineApp extends Application implements LifecycleObserver {
       return CurrentSublocation.getHeight();
     }
     return 0;
+  }
+
+  public static void setRouteDestination(float x, float y)
+  {
+    if (CurrentLocation != null && CurrentSublocation != null) {
+      Point targetPoint = new Point(x, y);
+      LocationPoint targetLPoint = new LocationPoint(targetPoint, CurrentLocation.getId(), CurrentSublocation.getId());
+      RouteManager.setTarget(targetLPoint);
+    }
+  }
+
+  public static ArrayList<Point> getFirstRoutePoints()
+  {
+    Log.d("NavigineApp", "getFirstRoutePoints()");
+
+    ArrayList<Point> firstRoutePoints = new ArrayList<>();
+
+    if (CurrentRoutePaths != null) {
+      for (int j = 0; j < CurrentRoutePaths.size(); j++)
+      {
+        // https://github.com/Navigine/Indoor-Navigation-Android-Mobile-SDK-2.0/wiki/Class-RoutePath
+        Log.d("==DEBUG==", "RoutePath: " + String.valueOf(CurrentRoutePaths.get(j).getPoints()));
+        RoutePath CurrentRoutePath = CurrentRoutePaths.get(j);
+        ArrayList<LocationPoint> routePoints = CurrentRoutePath.getPoints();
+        for (int r = 0; r < routePoints.size(); r++)
+        {
+          Point lPoint = routePoints.get(j).getPoint();
+          // https://github.com/Navigine/Indoor-Navigation-Android-Mobile-SDK-2.0/wiki/Class-LocationPoint
+          firstRoutePoints.add(lPoint);
+          Log.d("==DEBUG==", "routePoints: " + String.valueOf(lPoint));
+        }
+        break; // (!) only first route
+      }
+    }
+
+    return firstRoutePoints;
   }
 
     @Override

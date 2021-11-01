@@ -221,12 +221,46 @@ public class NavigineModule extends ReactContextBaseJavaModule {
     public void getRoutePoints(Callback callback) {
       if (DEBUG_LOG) Log.d(TAG, "getRoutePoints()");
 
+      ArrayList<Point> firstRoutePoints = NavigineApp.getFirstRoutePoints();
+
+      int pointsSize = firstRoutePoints.size();
+      if (pointsSize > 2) {
+        float mapWidth = NavigineApp.getCurSublocationWidth(); // location width in meters
+        float mapHeight = NavigineApp.getCurSublocationHeight(); // location height in meters
+        if (DEBUG_LOG) Log.d(TAG, "MapSize: : " + mapWidth + "/" + mapHeight);
+
+        int imageWidth = NavigineApp.getMapImageWidth(); // map image width in pixels
+        int imageHeight = NavigineApp.getMapImageHeight(); // map image height in pixels
+        if (DEBUG_LOG) Log.d(TAG, "ImageSize: : " + imageWidth + "/" + imageHeight);
+
+        if (mapWidth > 0 && mapHeight > 0 && imageWidth > 0 && imageHeight > 0) {
+          float width1m = imageWidth / mapWidth; // pixels in 1 meter of width
+          float height1m = imageHeight / mapHeight; // pixels in 1 meter of height
+          if (DEBUG_LOG) Log.d(TAG, "pixelsIn1m: : " + width1m + "/" + height1m);
+
+          ArrayList<String> pointsArray = new ArrayList<String>();
+          for (int j = 0; j < pointsSize; j++) {
+            Point P = firstRoutePoints.get(j);
+            pointsArray.add("{\"x\": " + String.valueOf(P.getX() * width1m) + ", \"y\": " + String.valueOf(imageHeight - P.getY() * height1m) + "}");
+          }
+          String pointsString = "[";
+          for (String s : pointsArray) {
+            pointsString += s + ", ";
+          }
+          pointsString = pointsString.replaceAll(",\\s*$", "");
+          pointsString += "]";
+          callback.invoke(pointsString);
+          return;
+        }
+      }
       callback.invoke("[]");
     }
 
     @ReactMethod
     public void setRouteDestination(float x, float y, Callback callback) {
       if (DEBUG_LOG) Log.d(TAG, String.format(Locale.ENGLISH, "setRouteDestination: x:%.2f, y:%.2f)", x, y));
+
+      NavigineApp.setRouteDestination(5, 5);
 
       callback.invoke("OK");
     }
