@@ -14,18 +14,10 @@ import com.facebook.react.bridge.ReactContext;
 import com.navigine.idl.java.Point;
 
 import android.Manifest;
-import android.app.*;
-import android.content.*;
-import android.graphics.*;
 import android.os.*;
-import android.view.*;
-import android.view.View.*;
-import android.widget.*;
 import android.util.*;
-import java.io.*;
 import java.lang.*;
 import java.util.Locale;
-import android.icu.util.Calendar;
 import android.app.Activity;
 
 import androidx.core.app.ActivityCompat;
@@ -55,24 +47,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.provider.Settings;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.view.Gravity;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.TextView;
-import android.widget.Toast;
-
 import java.util.Objects;
 import android.bluetooth.BluetoothAdapter;
 
@@ -211,10 +190,19 @@ public class NavigineModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void didEnterZones(Callback callback) {
-      if (DEBUG_LOG) Log.d(TAG, "didEnterZones()");
+    public void getLastZoneId(Callback callback) {
+      if (DEBUG_LOG) Log.d(TAG, "getLastZoneId()");
 
-      callback.invoke("");
+      int zoneId = NavigineApp.getLastZoneId();
+      callback.invoke(zoneId);
+    }
+
+    @ReactMethod
+    public void getLastZoneName(Callback callback) {
+      if (DEBUG_LOG) Log.d(TAG, "getLastZoneName()");
+
+      String zoneName = NavigineApp.getLastZoneName();
+      callback.invoke(zoneName);
     }
 
     @ReactMethod
