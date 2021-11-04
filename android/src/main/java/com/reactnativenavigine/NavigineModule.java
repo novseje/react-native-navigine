@@ -269,6 +269,11 @@ public class NavigineModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void uploadLogFile() {
+      NavigineApp.uploadLogFile();
+    }
+
+    @ReactMethod
     public void getZoomScale(Callback callback) {
       if (DEBUG_LOG) Log.d(TAG, "getZoomScale()");
       callback.invoke("1");

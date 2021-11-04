@@ -194,6 +194,10 @@ const NaviginePlugin = {
     return response;
   },
 
+  uploadLogFile: async function () {
+    Navigine.uploadLogFile();
+  },
+
   getFloorImage222: async function () {
     Navigine.getFloorImage(callbackFn);
   },

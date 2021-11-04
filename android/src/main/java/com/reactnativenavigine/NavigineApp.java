@@ -35,9 +35,11 @@ import com.navigine.idl.java.RoutePath;
 import com.navigine.idl.java.ZoneManager;
 import com.navigine.idl.java.ZoneListener;
 import com.navigine.idl.java.Zone;
+import com.navigine.idl.java.ResourceUploadListener;
 import com.navigine.sdk.Navigine;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public class NavigineApp extends Application implements LifecycleObserver {
@@ -125,6 +127,9 @@ public class NavigineApp extends Application implements LifecycleObserver {
             LocationManager = mNavigineSdk.getLocationManager();
             ResourceManager = mNavigineSdk.getResourceManager(LocationManager);
             NavigationManager = mNavigineSdk.getNavigationManager(LocationManager);
+
+            NavigationManager.startLogRecording();
+
             MeasurementManager = mNavigineSdk.getMeasurementManager();
             RouteManager = mNavigineSdk.getRouteManager(LocationManager, NavigationManager);
             NotificationManager = mNavigineSdk.getNotificationManager(LocationManager);
@@ -369,6 +374,30 @@ public class NavigineApp extends Application implements LifecycleObserver {
     } else {
       return "";
     }
+  }
+
+  public static void uploadLogFile()
+  {
+    Log.d("NavigineApp", "uploadLogFile()");
+
+    NavigationManager.stopLogRecording();
+
+    List<String> mLogList = new ArrayList<>();
+    mLogList.addAll(NavigineApp.ResourceManager.getLogsList());
+    String item = mLogList.get(0);
+    Log.d("NavigineApp", "===LOG===\n" + item);
+
+    NavigineApp.ResourceManager.uploadLogFile(item, new ResourceUploadListener() {
+      @Override
+      public void onUploaded() {
+        Log.d("NavigineApp", "Log uploaded");
+      }
+
+      @Override
+      public void onFailed(Error error) {
+        Log.d("NavigineApp", "Logfile uploading failed");
+      }
+    });
   }
 
     @Override
