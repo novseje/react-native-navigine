@@ -1,5 +1,5 @@
 #import <React/RCTBridgeModule.h>
-#import <navigine.h>
+#import "Frameworks/navigine.framework/Headers/navigine.h"
 
 #define DEBUG_LOG YES
 
