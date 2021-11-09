@@ -1,9 +1,14 @@
+import UIKit
+
 @objc(Navigine)
 class Navigine: NSObject {
     
     var mNavigineSdk: NCNavigineSdk?
     var mLocationManager: NCLocationManager?
     var mNavigationManager: NCNavigationManager?
+
+    var currentLocation: NCLocation?
+    var currentSublocation: NCSublocation?
 
 
     @objc(init:locationId:callback:)
@@ -21,9 +26,19 @@ class Navigine: NSObject {
         mNavigationManager = mNavigineSdk?.getNavigationManager(mLocationManager)!
         mNavigationManager?.add(self)
         
+        
         callback(["OK"])
     }
-    
+
+    @objc(getFloorImage:)
+    func getFloorImage(callback:RCTResponseSenderBlock) -> Void {
+        
+        
+        
+        callback(["OK"])
+    }
+
+
 //--------------- NATIVE FUNCTIONS ---------------
     
     
@@ -31,9 +46,18 @@ class Navigine: NSObject {
 
 extension Navigine: NCLocationListener {
     func onLocationLoaded(_ location: NCLocation?) {
-        // do smth with location
         print("onLocationLoaded()")
 
+        currentLocation = location
+        
+        for sublocation in location!.sublocations {
+            print(sublocation.id)
+            currentSublocation = sublocation
+            break
+        }
+        
+        var imageId = currentSublocation?.imageId
+        
     }
     
     func onDownloadProgress(_ received: Int32, total: Int32) {
@@ -58,3 +82,15 @@ extension Navigine: NCPositionListener {
         print("onPositionError()")
     }
 }
+
+extension Navigine: NCResourceListener {
+    func onLoaded(_ imageId: String, image: NCImage?) {
+        print("onLoaded()")
+    }
+    
+    func onFailed(_ imageId: String, error: Error?) {
+        print("onFailed()")
+    }
+}
+
+
