@@ -16,6 +16,9 @@ RCT_EXTERN_METHOD(init:(NSString *)apiKey locationId:(NSInteger)locationId callb
 
 RCT_EXTERN_METHOD(getFloorImage:(RCTResponseSenderBlock)callback)
 
+RCT_EXTERN_METHOD(getFloorImageSizes:(RCTResponseSenderBlock)callback)
+
+
 RCT_EXPORT_METHOD(getAzimuth: (RCTResponseSenderBlock)callback)
 {
     callback(@[[NSString stringWithFormat: @"OK"]]);
@@ -26,14 +29,9 @@ RCT_EXPORT_METHOD(getCurPosition: (RCTResponseSenderBlock)callback)
     callback(@[[NSString stringWithFormat: @"OK"]]);
 }
 
-RCT_EXPORT_METHOD(getFloorImageSizes: (RCTResponseSenderBlock)callback)
-{
-    callback(@[[NSString stringWithFormat: @"OK"]]);
-}
-
 RCT_EXPORT_METHOD(getZoomScale: (RCTResponseSenderBlock)callback)
 {
-    callback(@[[NSString stringWithFormat: @"OK"]]);
+    callback(@[[NSString stringWithFormat: @"1"]]);
 }
 
 RCT_EXPORT_METHOD(didEnterZones:(RCTResponseSenderBlock)callback)
