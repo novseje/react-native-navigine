@@ -18,11 +18,8 @@ RCT_EXTERN_METHOD(getFloorImage:(RCTResponseSenderBlock)callback)
 
 RCT_EXTERN_METHOD(getFloorImageSizes:(RCTResponseSenderBlock)callback)
 
+RCT_EXTERN_METHOD(getAzimuth:(RCTResponseSenderBlock)callback)
 
-RCT_EXPORT_METHOD(getAzimuth: (RCTResponseSenderBlock)callback)
-{
-    callback(@[[NSString stringWithFormat: @"OK"]]);
-}
 
 RCT_EXPORT_METHOD(getCurPosition: (RCTResponseSenderBlock)callback)
 {

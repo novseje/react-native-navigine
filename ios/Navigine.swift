@@ -35,6 +35,7 @@ class Navigine: NSObject {
         mNavigationManager?.add(self)
         
         
+        
     }
 
     @objc(getFloorImage:)
@@ -57,6 +58,17 @@ class Navigine: NSObject {
         let height: Int32 = image!.height
         
         let result: String = "\(width)|\(height)"
+        print(result)
+        callback([result])
+    }
+
+    @objc(getAzimuth:)
+    func getAzimuth(callback:RCTResponseSenderBlock) -> Void {
+        print("(Navigine.swift) getAzimuth()")
+        
+        let azimuth = Navigine.currentSublocation?.azimuth
+        
+        let result: String = "\(azimuth)"
         print(result)
         callback([result])
     }
