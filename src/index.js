@@ -119,42 +119,35 @@ const NaviginePlugin = {
   },
 
   /**
-   * Return array of all entered zones
-   * @returns array of zones [{name: 'ZONE_NAME'}]
+   * Return id of last entered zone
+   * @returns {int} zone id
    */
-  didEnterZones: async function () {
-    if (DEBUG_LOG) console.log("[Navigine] didEnterZones()");
+  getLastZoneId: async function () {
+    if (DEBUG_LOG) console.log("[Navigine] getLastZoneId()");
 
-    let didEnterZonesPromise = new Promise((resolve, reject) => {
-      Navigine.didEnterZones(function (data) {
+    let getLastZoneIdPromise = new Promise((resolve, reject) => {
+      Navigine.getLastZoneId(function (data) {
         resolve(data);
       });
     });
-    let response = await didEnterZonesPromise;
-    if (response) {
-      let name = response.toString();
-      let zones = [{name: name}];
-      return zones;
-    } else {
-      return null;
-    }
+    let response = await getLastZoneIdPromise;
+    return parseInt(response);
   },
 
   /**
    * Return name of last entered zone
-   * TEMPORARY FUNCTION
-   * @returns {String} zone name
+   * @returns {string} zone name
    */
   getLastZoneName: async function () {
     if (DEBUG_LOG) console.log("[Navigine] getLastZoneName()");
 
-    let zones = await this.didEnterZones();
-    if (zones) {
-      var last_element = zones[zones.length - 1];
-      return last_element.name;
-    } else {
-      return false;
-    }
+    let getLastZoneNamePromise = new Promise((resolve, reject) => {
+      Navigine.getLastZoneName(function (data) {
+        resolve(data);
+      });
+    });
+    let response = await getLastZoneNamePromise;
+    return response;
   },
 
   /**
@@ -199,6 +192,10 @@ const NaviginePlugin = {
     });
     let response = await setRouteDestinationPromise;
     return response;
+  },
+
+  uploadLogFile: async function () {
+    Navigine.uploadLogFile();
   },
 
   getFloorImage222: async function () {
