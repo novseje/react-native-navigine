@@ -27,6 +27,10 @@ import com.navigine.idl.java.ResourceListener;
 import com.navigine.idl.java.RouteManager;
 import com.navigine.idl.java.RouteListener;
 import com.navigine.idl.java.RoutePath;
+import com.navigine.idl.java.ZoneManager;
+import com.navigine.idl.java.ZoneListener;
+import com.navigine.idl.java.Zone;
+import com.navigine.idl.java.ResourceUploadListener;
 import com.navigine.sdk.Navigine;
 
 import java.util.ArrayList;
@@ -64,13 +68,15 @@ public class NavigineApp extends Application {
     public static NotificationManager NotificationManager = null;
     public static MeasurementManager  MeasurementManager  = null;
     public static RouteManager        RouteManager        = null;
+    public static ZoneManager         ZoneManager         = null;
 
     public static Location CurrentLocation = null;
     public static Sublocation CurrentSublocation = null;
     public static Image CurrentImage = null;
     public static Position CurrentPosition = null;
     public static ArrayList<RoutePath> CurrentRoutePaths = null;
-    //private ArrayList<Zone> zonesCollect = new ArrayList<Zone>();
+    public static Zone LastZone = null;
+    public static ArrayList<Zone> zonesCollect = new ArrayList<Zone>();
 
     public static int LocationId = 0;
 
@@ -115,9 +121,13 @@ public class NavigineApp extends Application {
             LocationManager = mNavigineSdk.getLocationManager();
             ResourceManager = mNavigineSdk.getResourceManager(LocationManager);
             NavigationManager = mNavigineSdk.getNavigationManager(LocationManager);
+
+            NavigationManager.startLogRecording();
+
             MeasurementManager = mNavigineSdk.getMeasurementManager();
             RouteManager = mNavigineSdk.getRouteManager(LocationManager, NavigationManager);
             NotificationManager = mNavigineSdk.getNotificationManager(LocationManager);
+            ZoneManager = mNavigineSdk.getZoneManager(LocationManager, NavigationManager);
 
             LocationManager.addLocationListener(new LocationListener() {
               @Override
@@ -188,6 +198,20 @@ public class NavigineApp extends Application {
               public void onPathsUpdated(ArrayList<RoutePath> routePaths){
                 Log.d("NavigineApp", "onPathsUpdated().");
                 CurrentRoutePaths = routePaths;
+              }
+            });
+
+            ZoneManager.addZoneListener(new ZoneListener() {
+              @Override
+              public void onEnterZone(Zone z){
+                Log.d("NavigineApp", "onEnterZone()");
+                ///zonesCollect.add(z);
+                LastZone = z;
+                Log.d("NavigineApp", "ZONE: " + z.getName());
+              }
+              @Override
+              public void onLeaveZone(Zone z){
+                Log.d("NavigineApp", "onLeaveZone()");
               }
             });
 
@@ -308,6 +332,66 @@ public class NavigineApp extends Application {
     }
 
     return firstRoutePoints;
+  }
+
+  private static Zone getLastZone()
+  {
+    Log.d("NavigineApp", "getLastZone()");
+    return LastZone;
+  }
+
+  public static void clearZonesCollect()
+  {
+    Log.d("NavigineApp", "clearZonesCollect()");
+    zonesCollect.clear();
+  }
+
+  public static int getLastZoneId()
+  {
+    Log.d("NavigineApp", "getLastZoneId()");
+
+    Zone z = LastZone;
+    if (z != null) {
+      return z.getId();
+    } else {
+      return 0;
+    }
+  }
+
+  public static String getLastZoneName()
+  {
+    Log.d("NavigineApp", "getLastZoneName()");
+
+    Zone z = LastZone;
+    if (z != null) {
+      return z.getName();
+    } else {
+      return "";
+    }
+  }
+
+  public static void uploadLogFile()
+  {
+    Log.d("NavigineApp", "uploadLogFile()");
+
+    NavigationManager.stopLogRecording();
+
+    List<String> mLogList = new ArrayList<>();
+    mLogList.addAll(NavigineApp.ResourceManager.getLogsList());
+    String item = mLogList.get(0);
+    Log.d("NavigineApp", "===LOG===\n" + item);
+
+    NavigineApp.ResourceManager.uploadLogFile(item, new ResourceUploadListener() {
+      @Override
+      public void onUploaded() {
+        Log.d("NavigineApp", "Log uploaded");
+      }
+
+      @Override
+      public void onFailed(Error error) {
+        Log.d("NavigineApp", "Logfile uploading failed");
+      }
+    });
   }
 
 }
