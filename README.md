@@ -2,6 +2,9 @@
 
 React Native module for Navigine indoor positioning system
 
+#This module continues to evolve as a paid product.
+You can write to me for more detailed information.
+
 ## Installation
 
 `$ npm install github:novseje/react-native-navigine`
