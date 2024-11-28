@@ -4,7 +4,7 @@ React Native module for Navigine indoor positioning system
 
 # This module continues to evolve as a paid product
 
-You can contact me for more detailed information.
+You can contact info@icit-corp.com for more detailed information.
 
 
 ## Installation
