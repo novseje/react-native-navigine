@@ -1,10 +1,10 @@
-# react-native-navigine
+## React Native module for Navigine indoor positioning system
 
-React Native module for Navigine indoor positioning system
-
+___
 # This module continues to evolve as a paid product
 
 You can contact info@icit-corp.com for more detailed information.
+___
 
 
 ## Installation
@@ -91,7 +91,7 @@ And set permissions:
 import NaviginePlugin from 'react-native-navigine';
 
 NaviginePlugin.init("XXXX-XXXX-XXXX-XXXX", 99999, async (param) => {
-    
+
     // Start work with Navigine
 
     let floorImage_base64 = await NaviginePlugin.getFloorImage();
